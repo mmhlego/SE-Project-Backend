@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MyOnlineShop.Models
@@ -15,6 +15,8 @@ namespace MyOnlineShop.Models
         public string Information { get; set; }
         public int likes { get; set; }
         public int dislikes { get; set; }
+
+        public string image { get; set; }
         [ForeignKey("UserId")]
         public User user { get; set; }
     }

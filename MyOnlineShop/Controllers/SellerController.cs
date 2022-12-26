@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using System.Web.Http;
 using MyOnlineShop.Models;
 using System;
@@ -12,6 +12,7 @@ using RouteAttribute = Microsoft.AspNetCore.Mvc.RouteAttribute;
 using MyOnlineShop.Models.apimodel;
 using HttpPutAttribute = Microsoft.AspNetCore.Mvc.HttpPutAttribute;
 using FromBodyAttribute = Microsoft.AspNetCore.Mvc.FromBodyAttribute;
+using System.Xml.Linq;
 
 namespace MyOnlineShop.Controllers
 {
@@ -25,40 +26,55 @@ namespace MyOnlineShop.Controllers
             _context = context;
 
         }
-        //[HttpPost]
-        //[Route("sellers/")]
-        //public IActionResult GetAllSellers() {
-        //    try
-        //    {
-        //        var seller = _context.sellers.ToList();
-        //        if (seller == null)
-        //        {
-        //            return NotFound();
-        //        }
-        //        if (!ModelState.IsValid)
-        //        {
-        //            return BadRequest(ModelState);
-        //        }
-        //        return Ok(seller);
-        //    }
-        //    catch
-        //    {
-        //        return StatusCode(StatusCodes.Status500InternalServerError);
-        //    }
-        //}
-
 
         [HttpGet]
         [Route("sellers/")]
         public IActionResult GetAllSellers(int SellersPerPage, int page)
-        {   //need to grab list for paging
+        {   
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             try
             {   
-                var seller = _context.sellers.ToList();
-                List<SellerSchema> sellers = new List<SellerSchema>();
+
+                List<Seller> seller = _context.sellers.ToList();
+                List<Seller> sellers = new List<Seller>();
+
+                if (seller != null)
+                {
+
+                    if ((page * SellersPerPage) - SellersPerPage < seller.Count)
+                    {
+                        if (page * SellersPerPage > seller.Count)
+                        {
+                            sellers = seller.GetRange((page * SellersPerPage) - SellersPerPage, seller.Count);
+
+                        }
+                        else
+                        {
+                            sellers = seller.GetRange((page * SellersPerPage) - SellersPerPage, seller.Count);
+
+                        }
+
+                    }
+                    else
+                    {
+                        return BadRequest();
+                    }
+                }
+
+
+                else
+                {
+                    return NotFound();
+
+                }
+                List<SellerSchema> sellerSchema = new List<SellerSchema>(); 
+                
                 foreach(var ss in seller)
                 {
-                    User user = _context.users.SingleOrDefault(u => u.ID == ss.UserId);
+                    var user = _context.users.SingleOrDefault(p => p.ID == ss.UserId);
                     SellerSchema schema = new SellerSchema()
                     {
                         information = ss.Information,
@@ -66,10 +82,11 @@ namespace MyOnlineShop.Controllers
                         id = ss.ID,
                         dislikes = ss.dislikes,
                         likes = ss.likes,
-                        image = user.ImageUrl,
-                        name = ss.user.UserName
+                        image = ss.image,
+                        name = user.FirstName+" "+user.LastName,
+                        restricted = user.Restricted
                     };
-                    sellers.Add(schema);
+                    sellerSchema.Add(schema);
                 }
 
                 if (seller == null)
@@ -84,7 +101,7 @@ namespace MyOnlineShop.Controllers
                 {
                     sellersPerPage = SellersPerPage,
                     page = page,
-                    sellers = sellers
+                    sellers = sellerSchema
 
                 };
 
@@ -106,7 +123,7 @@ namespace MyOnlineShop.Controllers
             try
             {
                 var ss = _context.sellers.SingleOrDefault((p) => p.ID == sellerId);
-                User user = _context.users.SingleOrDefault(u => u.ID == ss.UserId);
+                var user = _context.users.SingleOrDefault(p => p.ID == ss.UserId);
                 SellerSchema schema = new SellerSchema()
                 {
                     information = ss.Information,
@@ -114,8 +131,10 @@ namespace MyOnlineShop.Controllers
                     id = ss.ID,
                     dislikes = ss.dislikes,
                     likes = ss.likes,
-                    image = user.ImageUrl,
-                    name = ss.user.UserName
+                    image = ss.image,
+                    name = user.UserName,
+                    restricted = user.Restricted
+                    
                 };
                 if (ss == null)
                 {
@@ -145,7 +164,6 @@ namespace MyOnlineShop.Controllers
             try
             {
                 var ss = _context.sellers.SingleOrDefault((p) => p.ID == sellerId);
-                User user = _context.users.SingleOrDefault(u => u.ID == ss.UserId);
                 SellerSchema schema = new SellerSchema()
                 {
                     information = s.information,
@@ -153,7 +171,7 @@ namespace MyOnlineShop.Controllers
                     id = ss.ID,
                     dislikes = ss.dislikes,
                     likes = ss.likes,
-                    image = user.ImageUrl,
+                    image = ss.image,
                     name = ss.user.UserName
                 };
                 if (ss == null)
@@ -175,57 +193,6 @@ namespace MyOnlineShop.Controllers
 
         }
 
-        [HttpPut]
-        [Route("sellers/{id:Guid}/likes")]
-        public ActionResult putSellerlike(Guid id, [FromBody] likeModel l)
-        {
-            try
-            {
-                var seller = _context.sellers.Where(p => p.ID == id).Single();
-                if (seller == null)
-                    return NotFound();
-                else
-                {
-
-                    if (l.like == true)
-                    {
-                        seller.likes = seller.likes + 1;
-
-                    }
-                    else
-                    {
-                        seller.dislikes = seller.dislikes + 1;
-
-                    }
-                    _context.Update(seller);
-                    _context.SaveChanges();
-                    if (!ModelState.IsValid)
-                    {
-                        return BadRequest(ModelState);
-                    }
-                    var user = _context.users.SingleOrDefault(s => s.ID == seller.UserId);
-                    SellerSchema schema = new SellerSchema()
-                    {
-                        information = seller.Information,
-                        address = seller.Address,
-                        id = seller.ID,
-                        dislikes = seller.dislikes,
-                        likes = seller.likes,
-                        image = user.ImageUrl,
-                        name = user.FirstName + " " + user.LastName
-                        
-                    };
-
-                    return Ok(schema);
-
-                }
-            }
-            catch
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError);
-            }
-
-        }
-
+        
     }
 }
