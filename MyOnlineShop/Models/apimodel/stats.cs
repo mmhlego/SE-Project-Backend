@@ -1,4 +1,4 @@
-﻿namespace MyOnlineShop.Models.apimodel
+namespace MyOnlineShop.Models.apimodel
 {
     public class statsModel
     {

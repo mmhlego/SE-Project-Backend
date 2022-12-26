@@ -32,7 +32,6 @@ namespace MyOnlineShop.Models.apimodel
         public bool restricted { get; set; }
     }
 
-
     public class likeModel
     {
         public bool like { get; set; }
