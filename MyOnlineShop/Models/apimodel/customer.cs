@@ -3,7 +3,7 @@ namespace MyOnlineShop.Models.apimodel
 {
     public class customersModel
     {
-        public int sellersPerPage { get; set; }
+        public int customersPerPage { get; set; }
         public int page { get; set; }
         public List<customerModel> customers { get; set; }
 

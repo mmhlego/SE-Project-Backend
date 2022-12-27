@@ -17,9 +17,7 @@ using System.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Data.SqlClient;
 using Newtonsoft.Json;
-//using System.Web.Mvc;
 using Microsoft.AspNetCore.Components;
-//using System.Web.Mvc;
 
 namespace MyOnlineShop.Controllers
 {
@@ -35,17 +33,17 @@ namespace MyOnlineShop.Controllers
 
         [HttpGet]
         [Route("Customers")]
-        public ActionResult<IEnumerable<customersModel>> CustomersGet([FromQuery] int Page, [FromQuery] int SellersPerPage)
+        public ActionResult<IEnumerable<customersModel>> CustomersGet([FromQuery] int Page, [FromQuery] int CustomersPerPage)
         {
             try
             {
                 var customers = new customersModel
                 {
                     page = Page,
-                    sellersPerPage = SellersPerPage,
+                    customersPerPage = CustomersPerPage,
                     customers = _context.customer
-                            .Skip((Page - 1) * SellersPerPage)
-                            .Take(SellersPerPage).Select(u => new customerModel
+                            .Skip((Page - 1) * CustomersPerPage)
+                            .Take(CustomersPerPage).Select(u => new customerModel
                             {
                                 id = u.UserId,
                                 username = u.user.UserName,
