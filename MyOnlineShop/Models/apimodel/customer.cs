@@ -28,7 +28,7 @@ namespace MyOnlineShop.Models.apimodel
         public string profileImage { get; set; }
         public DateTime birthDate { get; set; }
         public string address { get; set; }
-        public int balance { get; set; }
+        public double balance { get; set; }
         public bool restricted { get; set; }
     }
 
