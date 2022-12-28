@@ -10,7 +10,7 @@ namespace MyOnlineShop.Models
        public Guid CustomerID { get; set; }
         [Required]
         public string Status { get; set; }
-
+        public double TotalPrice { get; set; }
        [Required]
        public string Discription { get; set; }
 
