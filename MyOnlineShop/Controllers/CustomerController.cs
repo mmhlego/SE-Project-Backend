@@ -120,33 +120,40 @@ namespace MyOnlineShop.Controllers
 
         [HttpPut]
         [Route("Customers/{id}")]
-        public ActionResult<IEnumerable<customerModel>> EachCustomerPut(Guid id, [FromQuery] customerModel custput)
+        public ActionResult<IEnumerable<customerModel>> EachCustomerPut(Guid id, [FromQuery] customerreqModel custupdate)
         {
             try
             {
+                customerModel custput = new customerModel();
                 var CustomerId = _context.customer.SingleOrDefault(p => p.UserId == id);
-
-                CustomerId.UserId = id;
-                CustomerId.user.UserName = custput.username;
-                CustomerId.user.FirstName = custput.firstName;
-                CustomerId.user.LastName = custput.lastName;
-                CustomerId.user.PhoneNumber = custput.phoneNumber;
-                CustomerId.user.Email = custput.email;
-                CustomerId.user.ImageUrl = custput.profileImage;
-                CustomerId.user.BirthDate = custput.birthDate;
-                CustomerId.user.Restricted = custput.restricted;
-                CustomerId.Address = custput.address;
-                CustomerId.Balance = custput.balance;
-                _context.SaveChanges();
                 if (CustomerId == null)
                 {
                     return StatusCode(StatusCodes.Status404NotFound);
                 }
+                else
+                {
+                    custput = new customerModel()
+                    {
+                        id = id,
+                        username = CustomerId.user.UserName,
+                        firstName = CustomerId.user.FirstName,
+                        lastName = CustomerId.user.LastName,
+                        phoneNumber = CustomerId.user.PhoneNumber,
+                        email = CustomerId.user.Email,
+                        profileImage = CustomerId.user.ImageUrl,
+                        birthDate = CustomerId.user.BirthDate,
+                        restricted = CustomerId.user.Restricted,
+                        address = custupdate.address,
+                        balance = custupdate.balance
+                    };
+                    _context.SaveChanges();
+                    return Ok(custput);
+                }
+                
                 if (!ModelState.IsValid)
                 {
                     return StatusCode(StatusCodes.Status400BadRequest);
                 }
-                return Ok();
             }
             catch
             {

@@ -4,12 +4,20 @@ namespace MyOnlineShop.Models.apimodel
     {
         public int allstatsPerPage { get; set; }
         public int page { get; set; }
-        public List<Stats> stats { get; set; }
+        public List<statModel> stats { get; set; }
 
     }
-    /*
-    public class stats
+
+    public class statsReqModel
     {
+        public Guid productId { get; set; }
+        public DateTime datefrom { get; set; }
+        public DateTime dateto { get; set; }
+    }
+    
+    public class statModel
+    {
+        public Guid id { get; set; }
         public Guid productId { get; set; }
         public Guid sellerId { get; set; }
         public DateTime date { get; set; }
@@ -17,5 +25,5 @@ namespace MyOnlineShop.Models.apimodel
         public double price { get; set; }
        
     }
-    */
+    
 }

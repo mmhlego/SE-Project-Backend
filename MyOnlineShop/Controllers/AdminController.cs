@@ -13,7 +13,7 @@ using MyOnlineShop.Data;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.FSharp.Control;
-//using MyOnlineShop.Models.apimodel.users;
+
 
 namespace MyOnlineShop.Controllers
 {
@@ -598,24 +598,22 @@ namespace MyOnlineShop.Controllers
 
         [HttpGet]
         [Route("admin/stats")]
-        public ActionResult<IEnumerable<statsModel>> sellerstate(Guid productId, Guid sellerId, DateTime dateFrom, DateTime dateTo, [FromQuery] int page, [FromQuery] int statsPerPage)
+        public ActionResult<IEnumerable<statsModel>> sellerstate(Guid sellerId, statsReqModel s, [FromQuery] int page, [FromQuery] int statsPerPage)
         {
             if (User.IsInRole("Administrator"))
             {
                 try
                 {
-
-
                     var stats = new statsModel
                     {
                         page = page,
                         allstatsPerPage = statsPerPage,
-                        stats = _context.stats.Where(d => d.productId == productId && d.sellerId == sellerId && d.date >= dateFrom && d.date <= dateTo)
-                                            .Skip((page - 1) * statsPerPage)
-                                            .Take(statsPerPage)
-                                            .Select(u => new Stats
+                        stats = _context.stats.Where(d => d.productId == s.productId && d.sellerId == sellerId && d.date >= s.datefrom && d.date <= s.dateto)
+                        .Skip((page - 1) * statsPerPage)
+                        .Take(statsPerPage)
+                        .Select(u => new statModel
                                             {
-                                                Id = u.Id,
+                                                id = u.Id,
                                                 productId = u.productId,
                                                 sellerId = u.sellerId,
                                                 date = u.date,
