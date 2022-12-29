@@ -1,4 +1,4 @@
-﻿namespace MyOnlineShop.Models
+namespace MyOnlineShop.Models
 {
     public class Test
     {

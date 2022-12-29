@@ -3,7 +3,7 @@ namespace MyOnlineShop.Models.apimodel
 {
     public class customersModel
     {
-        public int sellersPerPage { get; set; }
+        public int customersPerPage { get; set; }
         public int page { get; set; }
         public List<customerModel> customers { get; set; }
 
@@ -28,7 +28,7 @@ namespace MyOnlineShop.Models.apimodel
         public string profileImage { get; set; }
         public DateTime birthDate { get; set; }
         public string address { get; set; }
-        public int balance { get; set; }
+        public double balance { get; set; }
         public bool restricted { get; set; }
     }
 
