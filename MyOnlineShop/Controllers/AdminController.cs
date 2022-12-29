@@ -11,7 +11,7 @@ using MyOnlineShop.Data;
 namespace MyOnlineShop.Controllers
 {
 
-	[Authorize(Roles = "Administrator")]
+	[Authorize(Roles = "Admin")]
 	public class AdminController : ControllerBase
 	{
 		private readonly MyShopContext _context;
@@ -59,19 +59,19 @@ namespace MyOnlineShop.Controllers
 		[Route("admin/users/{id}")]
 		public ActionResult eachuserget(Guid id)
 		{
-			if (User.IsInRole("Administrator"))
+			if (User.IsInRole("Admin"))
 			{
 				try
 				{
 					string finderQry = ("select * from User where id = " + id);
 					SqlConnectionStringBuilder conn = new SqlConnectionStringBuilder();
-					//userModel s = new userModel();
 					SqlConnection connect = new SqlConnection(conn.ConnectionString);
 					connect.Open();
 					SqlDataAdapter da = new SqlDataAdapter();
 					SqlCommand samplecommand = new SqlCommand(finderQry, connect);
 					da.SelectCommand = samplecommand;
 					DataSet ds = new DataSet();
+
 					da.Fill(ds);
 					if (ds == null)
 						return StatusCode(StatusCodes.Status404NotFound);
@@ -103,7 +103,7 @@ namespace MyOnlineShop.Controllers
 		[Route("admin/users/{id}")]
 		public ActionResult userput(Guid id, [FromBody] userreqModel req)
 		{
-			if (User.IsInRole("Administrator"))
+			if (User.IsInRole("Admin"))
 			{
 				try
 				{
@@ -144,7 +144,7 @@ namespace MyOnlineShop.Controllers
 		[Route("admin/users/{id}")]
 		public ActionResult userdelete(Guid id)
 		{
-			if (User.IsInRole("Administrator"))
+			if (User.IsInRole("Admin"))
 			{
 				try
 				{
@@ -189,7 +189,7 @@ namespace MyOnlineShop.Controllers
 		[Route("admin/discountTokens")]
 		public ActionResult<IEnumerable<tokensModel>> discountTokens(bool isEvent, bool expired, [FromQuery] int page, [FromQuery] int tokensPerPage)
 		{
-			if (User.IsInRole("Administrator"))
+			if (User.IsInRole("Admin"))
 			{
 				try
 				{
@@ -256,7 +256,7 @@ namespace MyOnlineShop.Controllers
 		[Route("admin/discountTokens")]
 		public ActionResult discountTokenspost([FromBody] tokenreqModel tokenreq)
 		{
-			if (User.IsInRole("Administrator"))
+			if (User.IsInRole("Admin"))
 			{
 				try
 				{
@@ -302,7 +302,7 @@ namespace MyOnlineShop.Controllers
 		[Route("admin/discountTokens/{id}")]
 		public ActionResult discountTokensdelete(Guid id)
 		{
-			if (User.IsInRole("Administrator"))
+			if (User.IsInRole("Admin"))
 			{
 				try
 				{
@@ -513,7 +513,7 @@ namespace MyOnlineShop.Controllers
 		[Route("admin/carts/{id:Guid}")]
 		public ActionResult admincart(Guid id)
 		{
-			if (User.IsInRole("Administrator"))
+			if (User.IsInRole("Admin"))
 			{
 				try
 				{
@@ -556,7 +556,7 @@ namespace MyOnlineShop.Controllers
 		[Route("admin/carts/{id}")]
 		public ActionResult admincartsput(Guid id, string status)
 		{
-			if (User.IsInRole("Administrator"))
+			if (User.IsInRole("Admin"))
 			{
 				try
 				{
@@ -593,7 +593,7 @@ namespace MyOnlineShop.Controllers
 		[Route("admin/stats")]
 		public ActionResult<IEnumerable<statsModel>> sellerstate(Guid sellerId, statsReqModel s, [FromQuery] int page, [FromQuery] int statsPerPage)
 		{
-			if (User.IsInRole("Administrator"))
+			if (User.IsInRole("Admin"))
 			{
 				try
 				{

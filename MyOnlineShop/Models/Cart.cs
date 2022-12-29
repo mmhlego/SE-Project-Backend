@@ -21,7 +21,6 @@ namespace MyOnlineShop.Models
 		public DateTime UpdateDate { get; set; }
 		public Guid ProductId { get; set; }
 
-		[ForeignKey("ProductId")]
 		public List<Product> Products { get; set; }
 
 	}

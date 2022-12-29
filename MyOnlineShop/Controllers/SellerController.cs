@@ -75,7 +75,7 @@ namespace MyOnlineShop.Controllers
 						id = ss.ID,
 						dislikes = ss.dislikes,
 						likes = ss.likes,
-						image = ss.image,
+						image = user.ImageUrl,
 						name = user.FirstName + " " + user.LastName,
 						restricted = user.Restricted
 					};
@@ -124,7 +124,7 @@ namespace MyOnlineShop.Controllers
 					id = ss.ID,
 					dislikes = ss.dislikes,
 					likes = ss.likes,
-					image = ss.image,
+					image = user.ImageUrl,
 					name = user.UserName,
 					restricted = user.Restricted
 
@@ -156,15 +156,16 @@ namespace MyOnlineShop.Controllers
 		{
 			try
 			{
-				var ss = _context.sellers.SingleOrDefault((p) => p.ID == sellerId);
-				SellerSchema schema = new SellerSchema()
+                var ss = _context.sellers.SingleOrDefault((p) => p.ID == sellerId);
+                var user = _context.users.SingleOrDefault(p => p.ID == ss.UserId);
+                SellerSchema schema = new SellerSchema()
 				{
 					information = s.information,
 					address = s.address,
 					id = ss.ID,
 					dislikes = ss.dislikes,
 					likes = ss.likes,
-					image = ss.image,
+					image = user.ImageUrl,
 					name = ss.user.UserName
 				};
 				if (ss == null)
@@ -229,8 +230,11 @@ namespace MyOnlineShop.Controllers
 			try
 			{
 				SellerSchema seller = new SellerSchema();
-				var SellerId = _context.sellers.SingleOrDefault(l => l.UserId == id);
-				if (SellerId == null)
+                //var user = _context.users.SingleOrDefault(p => p.ID == ss.UserId);
+                var SellerId = _context.sellers.SingleOrDefault(l => l.UserId == id);
+                var user = _context.users.SingleOrDefault(p => p.ID == SellerId.UserId);
+
+                if (SellerId == null)
 				{
 					return StatusCode(StatusCodes.Status404NotFound);
 				}
@@ -240,7 +244,7 @@ namespace MyOnlineShop.Controllers
 					{
 						seller.id = SellerId.UserId;
 						seller.name = SellerId.user.FirstName + " " + SellerId.user.LastName;
-						seller.image = SellerId.image;
+						seller.image = user.ImageUrl;
 						seller.address = SellerId.Address;
 						seller.information = SellerId.Information;
 						seller.likes++;
@@ -251,55 +255,7 @@ namespace MyOnlineShop.Controllers
 					{
 						seller.id = SellerId.UserId;
 						seller.name = SellerId.user.FirstName + " " + SellerId.user.LastName;
-						seller.image = SellerId.image;
-						seller.address = SellerId.Address;
-						seller.information = SellerId.Information;
-						seller.likes--;
-						seller.dislikes = SellerId.dislikes;
-						seller.restricted = SellerId.user.Restricted;
-					}
-					_context.SaveChanges();
-				}
-				return Ok(seller);
-			}
-			catch
-			{
-				return StatusCode(StatusCodes.Status500InternalServerError);
-			}
-
-
-		}
-
-		[HttpPut]
-		[Route("Sellers/{id}/dislikes")]
-		public ActionResult<IEnumerable<SellerSchema>> SellerdisLikes(Guid id, bool dislike)
-		{
-			try
-			{
-				SellerSchema seller = new SellerSchema();
-				var SellerId = _context.sellers.SingleOrDefault(l => l.UserId == id);
-				if (SellerId == null)
-				{
-					return StatusCode(StatusCodes.Status404NotFound);
-				}
-				else
-				{
-					if (dislike)
-					{
-						seller.id = SellerId.UserId;
-						seller.name = SellerId.user.FirstName + " " + SellerId.user.LastName;
-						seller.image = SellerId.image;
-						seller.address = SellerId.Address;
-						seller.information = SellerId.Information;
-						seller.likes = SellerId.likes;
-						seller.dislikes++;
-						seller.restricted = SellerId.user.Restricted;
-					}
-					else
-					{
-						seller.id = SellerId.UserId;
-						seller.name = SellerId.user.FirstName + " " + SellerId.user.LastName;
-						seller.image = SellerId.image;
+						seller.image = user.ImageUrl;
 						seller.address = SellerId.Address;
 						seller.information = SellerId.Information;
 						seller.likes = SellerId.likes;
@@ -317,7 +273,5 @@ namespace MyOnlineShop.Controllers
 
 
 		}
-
-
 	}
 }

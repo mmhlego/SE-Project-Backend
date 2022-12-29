@@ -16,7 +16,6 @@ namespace MyOnlineShop.Models
 		public int likes { get; set; }
 		public int dislikes { get; set; }
 
-		public string image { get; set; }
 		[ForeignKey("UserId")]
 		public User user { get; set; }
 	}

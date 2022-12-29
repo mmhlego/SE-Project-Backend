@@ -56,7 +56,6 @@ namespace MyOnlineShop.Controllers
 		[Route("auth/register")]
 		public IActionResult registermethod([FromBody] RegisterModel registerModel)
 		{
-			//branch inserting
 			if (!ModelState.IsValid)
 			{
 				return BadRequest(ModelState);
