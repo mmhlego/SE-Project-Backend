@@ -22,7 +22,7 @@ namespace MyOnlineShop.Controllers
         [HttpGet]
         [Route("prices/")]
         public ActionResult GetPrices( Guid sellerId = default(Guid), Guid productId = default(Guid), int pricesPerPage = 50, int page =1, double priceFrom = 0,double priceTo =100000000000, bool available = true) {
-            try {
+           try {
                 if (!ModelState.IsValid)
                 {
                     return BadRequest(ModelState);
@@ -107,8 +107,8 @@ namespace MyOnlineShop.Controllers
                     };
                     return Ok(p);
                 }
-            }
-            catch { return StatusCode(StatusCodes.Status500InternalServerError); }
+           }
+           catch { return StatusCode(StatusCodes.Status500InternalServerError); }
         }
 
 

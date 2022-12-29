@@ -17,7 +17,7 @@ namespace MyOnlineShop.Models.apimodel
         public int likes { get; set; }
         public int dislikes { get; set; }
         public bool restricted { get; set; }
-       }
+    }
 
 
     public class SellerpagePutMethodRequest

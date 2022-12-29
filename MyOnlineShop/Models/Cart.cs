@@ -7,7 +7,10 @@ namespace MyOnlineShop.Models
     {
        [Key]
        public Guid ID{ get; set; }
-       public Guid CustomerID { get; set; }
+
+        [Required]
+        public Guid CustomerID{ get; set; }
+
         [Required]
         public string Status { get; set; }
 
@@ -16,7 +19,10 @@ namespace MyOnlineShop.Models
 
         [Required]
         public DateTime UpdateDate { get; set; }
-        public List<Order> orders { get; set; }
+        public Guid ProductId { get; set; }
+
+        [ForeignKey("ProductId")]
+        public List<Product> Products { get; set; }
 
     }
 }

@@ -18,7 +18,8 @@ namespace MyOnlineShop.Models
         public string LastName { get; set; }
         public string PhoneNumber { get; set; }
 
-        public string ImageUrl { get; set; }
+        public string ImageUrl { get; set; } 
+
         public string Password { get; set; }
         [Required]
         [MaxLength(50)]
@@ -28,9 +29,10 @@ namespace MyOnlineShop.Models
         public DateTime BirthDate { get; set; }
         [Required]
         public string AccessLevel { get; set; }
-        public bool Restricted { get; set; }
         [Required]
         public bool IsApproved { get; set; }
+
+        public bool Restricted { get; set; }
         public List<Customer> customers { get; set; }
         public List<Seller> sellers { get; set; }
     }

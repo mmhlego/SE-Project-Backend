@@ -14,6 +14,8 @@ using HttpDeleteAttribute = Microsoft.AspNetCore.Mvc.HttpDeleteAttribute;
 using MyOnlineShop.Models.apimodel;
 using HttpPutAttribute = Microsoft.AspNetCore.Mvc.HttpPutAttribute;
 using System.Xml.Linq;
+using System.Security.Claims;
+using FsCheck;
 
 namespace MyOnlineShop.Controllers
 {
@@ -101,6 +103,7 @@ namespace MyOnlineShop.Controllers
 
         [HttpPost]
         [Route("products/")]
+        [Authorize]
         public ActionResult AddProduct([FromBody] ProductPagePostRequestModel p1)
         {
             try
@@ -109,9 +112,53 @@ namespace MyOnlineShop.Controllers
                 {
                     return BadRequest(ModelState);
                 }
-                productsModel product = new productsModel();
 
-                return Ok(product);
+                Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier).ToString());
+                
+
+                if (userId != null)
+                {
+                    var user = _context.users.SingleOrDefault(u => u.ID == userId);
+                    var accessLevel = user.AccessLevel.ToLower();
+                    if (accessLevel == "seller" || accessLevel == "admin")
+                    {
+                        
+                        Product productToAdd = new Product() {
+
+                            ID = Guid.NewGuid(),
+                            Category = p1.category,
+                            Name = p1.name,
+                            Image = p1.image,
+                            Descriptiopn = p1.description,
+                            likes = 0,
+                            dislikes=0
+                            
+                        };
+                        productModel pmod = new productModel(){
+                            id = productToAdd.ID,
+                            category = productToAdd.Category,
+                            name = productToAdd.Name,
+                            image = productToAdd.Image,
+                            description = productToAdd.Descriptiopn,
+                            likes = 0,
+                            dislikes = 0
+                        };
+                        _context.Add(productToAdd);
+                        _context.SaveChanges();
+                        return Ok(pmod);
+                    }
+                    else {
+                        return Forbid();
+                    }
+;                }
+                else { 
+                return Unauthorized();
+                }
+
+                              
+
+
+                
 
             }
 
@@ -163,33 +210,59 @@ namespace MyOnlineShop.Controllers
 
         [HttpDelete]
         [Route("products/{id:Guid}")]
+        [Authorize]
         public ActionResult DeleteProduct(Guid id)
         {
             try
             {
-                var products = _context.Products.SingleOrDefault((p) => p.ID == id);
-                var p1 = new productModel()
-                {
-                    category = products.Category,
-                    description = products.Descriptiopn,
-                    id = products.ID,
-                    dislikes = products.dislikes,
-                    likes = products.likes,
-                    image = products.Image,
-                    name = products.Name
-
-                };
-                
-                if (products == null)
-                {
-                    return NotFound();
-                }
-                else _context.Products.Remove(products);
                 if (!ModelState.IsValid)
                 {
                     return BadRequest(ModelState);
                 }
-                return Ok(p1);
+
+                Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier).ToString());
+
+
+                if (userId != null)
+                {
+                    var user = _context.users.SingleOrDefault(u => u.ID == userId);
+                    var accessLevel = user.AccessLevel.ToLower();
+                    if (accessLevel == "admin")
+                    {
+
+                        var products = _context.Products.SingleOrDefault((p) => p.ID == id);
+                        var p1 = new productModel()
+                        {
+                            category = products.Category,
+                            description = products.Descriptiopn,
+                            id = products.ID,
+                            dislikes = products.dislikes,
+                            likes = products.likes,
+                            image = products.Image,
+                            name = products.Name
+
+                        };
+                        var Productprice = _context.productPrices.Where(p => p.ID == id).Single();
+                        if (Productprice == null)
+                        {
+                            return NotFound();
+                        }
+                        else
+                        {
+                            Productprice.Amount = 0;
+                            _context.Update(Productprice);
+                            _context.SaveChanges();
+                        }
+
+                        return Ok(p1);
+                    }
+                    else { 
+                    return Forbid();
+                    }
+                }
+                else {
+                    return Unauthorized();
+                }
             }
             catch
             {
@@ -201,6 +274,7 @@ namespace MyOnlineShop.Controllers
 
         [HttpPut]
         [Route("products/{id:Guid}")]
+        [Authorize]
         public ActionResult putProduct(Guid id,[FromBody] ProductPagePostRequestModel p1)
         {
             try
@@ -209,11 +283,56 @@ namespace MyOnlineShop.Controllers
                 {
                     return BadRequest(ModelState);
                 }
-                
-                productsModel product = new productsModel();
+                Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier).ToString());
 
-                return Ok(product);
 
+                if (userId != null)
+                {
+                    var user = _context.users.SingleOrDefault(u => u.ID == userId);
+                    var accessLevel = user.AccessLevel.ToLower();
+                    if (accessLevel == "seller" || accessLevel == "admin")
+                    {
+
+                        var product = _context.Products.Where(p => p.ID == id).Single();
+                        if (product != null)
+                        {
+                            if (p1.name != null) { product.Name = p1.name; }
+
+                            if (p1.category != null) { product.Category = p1.category; }
+
+                            if (p1.description != null) { product.Descriptiopn = p1.description; }
+
+                            if (p1.image != null) { product.Image = p1.image; }
+
+                            _context.Update(product);
+                            _context.SaveChanges();
+                            var p2 = new productModel()
+                            {
+                                category = p1.category,
+                                description = p1.description,
+                                id = id,
+                                dislikes = 0,
+                                likes = 0,
+                                image = p1.image,
+                                name = p1.name
+
+                            };
+
+                            return Ok(p2);
+                        }
+                        else
+                        {
+                            return NotFound();
+                        }
+                    }
+                    else {
+                    
+                    return Forbid();
+                    }
+                }
+                else {
+                    return Unauthorized();
+                }
             }
 
             catch
@@ -222,8 +341,6 @@ namespace MyOnlineShop.Controllers
             }
 
         }
-
-
 
 
 

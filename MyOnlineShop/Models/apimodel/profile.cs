@@ -18,8 +18,6 @@ namespace MyOnlineShop.Models.apimodel
 
     public class putprofileModel
     {
-
-        
        
         public string firstName { get; set; }
         public string lastName { get; set; }

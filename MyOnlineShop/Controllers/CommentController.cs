@@ -1,19 +1,23 @@
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis.VisualBasic.Syntax;
 using Microsoft.OpenApi.Validations.Rules;
 using MyOnlineShop.Data;
 using MyOnlineShop.Models;
+using MyOnlineShop.Models.apimodel;
 using System.Security.Claims;
 using System.Web.Http;
 using System.Web.Mvc;
 using AuthorizeAttribute = System.Web.Mvc.AuthorizeAttribute;
+using Comment = MyOnlineShop.Models.Comment;
 using ControllerBase = Microsoft.AspNetCore.Mvc.ControllerBase;
 using FromBodyAttribute = Microsoft.AspNetCore.Mvc.FromBodyAttribute;
 using HttpDeleteAttribute = Microsoft.AspNetCore.Mvc.HttpDeleteAttribute;
 using HttpGetAttribute = Microsoft.AspNetCore.Mvc.HttpGetAttribute;
 using HttpPostAttribute = Microsoft.AspNetCore.Mvc.HttpPostAttribute;
+using HttpPutAttribute = Microsoft.AspNetCore.Mvc.HttpPutAttribute;
 using RouteAttribute = Microsoft.AspNetCore.Mvc.RouteAttribute;
 
 namespace MyOnlineShop.Controllers
@@ -37,84 +41,31 @@ namespace MyOnlineShop.Controllers
                     return BadRequest(ModelState);
                 }
                 List<Comment> comments = _context.comment.ToList();
-                List<Comment> FilteredComments;
-                if (commentModel.productId != null && commentModel.userId == null && commentModel.dateFrom!=null
-                    && commentModel.dateTo == null)
+                List<Comment> FilteredComments = comments.ToList();
+
+                if (commentModel.productId != default(Guid))
                 {
-                    FilteredComments = (List<Comment>)comments.Where(c => c.ProductId == commentModel.productId 
-                    && c.SentDate>commentModel.dateFrom);
+                    FilteredComments = FilteredComments.Where(c => c.ProductId == commentModel.productId).ToList();
                 }
-                else if (commentModel.productId != null && commentModel.userId != null 
-                    && commentModel.dateFrom != null && commentModel.dateTo == null)
+                if (commentModel.userId != default(Guid))
                 {
-                    FilteredComments = (List<Comment>)comments.Where(c => c.ProductId == commentModel.productId
-                    && c.UserId == commentModel.userId && c.SentDate > commentModel.dateFrom);
-                }
-                else if (commentModel.productId == null && commentModel.userId != null 
-                    && commentModel.dateFrom != null && commentModel.dateTo == null) {
-                    FilteredComments = (List<Comment>)comments.Where(c => c.UserId == commentModel.userId
-                    && c.SentDate > commentModel.dateFrom);
-                }
-                else if (commentModel.productId != null && commentModel.userId == null &&
-                    commentModel.dateFrom == null && commentModel.dateTo == null)
-                {
-                    FilteredComments = (List<Comment>)comments.Where(c => c.ProductId == commentModel.productId);
-                }
-                else if (commentModel.productId != null && commentModel.userId != null 
-                    && commentModel.dateFrom == null && commentModel.dateTo == null)
-                {
-                    FilteredComments = (List<Comment>)comments.Where(c => c.ProductId == commentModel.productId
-                    && c.UserId == commentModel.userId);
-                }
-                else if (commentModel.productId == null && commentModel.userId != null 
-                    && commentModel.dateFrom == null && commentModel.dateTo == null)
-                {
-                    FilteredComments = (List<Comment>)comments.Where(c => c.UserId == commentModel.userId);
-                }
-                else if (commentModel.productId != null && commentModel.userId == null && commentModel.dateFrom != null
-                    && commentModel.dateTo != null)
-                {
-                    FilteredComments = (List<Comment>)comments.Where(c => c.ProductId == commentModel.productId
-                    && c.SentDate > commentModel.dateFrom && c.SentDate < commentModel.dateTo);
-                }
-                else if (commentModel.productId != null && commentModel.userId != null
-                    && commentModel.dateFrom != null && commentModel.dateTo != null)
-                {
-                    FilteredComments = (List<Comment>)comments.Where(c => c.ProductId == commentModel.productId
-                    && c.UserId == commentModel.userId && c.SentDate > commentModel.dateFrom && c.SentDate < commentModel.dateTo);
-                }
-                else if (commentModel.productId == null && commentModel.userId != null
-                    && commentModel.dateFrom != null && commentModel.dateTo != null)
-                {
-                    FilteredComments = (List<Comment>)comments.Where(c => c.UserId == commentModel.userId
-                    && c.SentDate > commentModel.dateFrom && c.SentDate < commentModel.dateTo);
-                }
-                else if (commentModel.productId != null && commentModel.userId == null &&
-                    commentModel.dateFrom == null && commentModel.dateTo != null)
-                {
-                    FilteredComments = (List<Comment>)comments.Where(c => c.ProductId == commentModel.productId 
-                    && c.SentDate < commentModel.dateTo);
-                }
-                else if (commentModel.productId != null && commentModel.userId != null
-                    && commentModel.dateFrom == null && commentModel.dateTo != null)
-                {
-                    FilteredComments = (List<Comment>)comments.Where(c => c.ProductId == commentModel.productId
-                    && c.UserId == commentModel.userId && c.SentDate < commentModel.dateTo);
-                }
-                else if (commentModel.productId == null && commentModel.userId != null
-                    && commentModel.dateFrom == null && commentModel.dateTo != null)
-                {
-                    FilteredComments = (List<Comment>)comments.Where(c => c.UserId == commentModel.userId 
-                    && c.SentDate <commentModel.dateTo);
-                }
-                else
-                {
-                    FilteredComments = comments;
+                    FilteredComments = FilteredComments.Where(c => c.UserId == commentModel.userId).ToList();
                 }
 
+                if (commentModel.dateFrom != default(DateTime))
+                {
+                    FilteredComments = FilteredComments.Where(c => c.SentDate >= commentModel.dateFrom).ToList();
+                }
+                if (commentModel.dateTo != default(DateTime))
+                {
+                    FilteredComments = FilteredComments.Where(c => c.SentDate <=commentModel.dateTo).ToList();
+                }
+
+              
 
                 List<Comment> commentsForShow;
               
+                
                 if (FilteredComments != null)
                 {
                     
@@ -137,9 +88,10 @@ namespace MyOnlineShop.Controllers
                         return BadRequest();
                     }
                 }
+            
 
 
-                else
+            else
                 {
                     return NotFound();
 
@@ -174,7 +126,7 @@ namespace MyOnlineShop.Controllers
 
             }
 
-            catch(Exception e)
+            catch (Exception e)
             {
                 return Ok(e);
             }
@@ -228,55 +180,103 @@ namespace MyOnlineShop.Controllers
             var comment = _context.comment.SingleOrDefault(c => c.Id == id);
             var user = _context.users.Single(u => u.ID == userId);
             string accesslevel = user.AccessLevel.ToLower();
-            if (accesslevel == "admin")
+            if (userId != null)
             {
-                if (comment == null)
+                if (accesslevel == "admin")
                 {
+                    if (comment == null)
+                    {
 
-                    return NotFound();
+                        return NotFound();
+                    }
+                    else
+                    {
+                        var temp = new Models.apimodel.Comment()
+                        {
+                            dislikes = comment.dislikes,
+                            id = comment.Id,
+                            likes = comment.likes,
+                            productId = comment.ProductId,
+                            SendDate = comment.SentDate,
+                            Text = comment.Text,
+                            userImage = user.ImageUrl,
+                            username = user.UserName
+                        };
+                        _context.comment.Remove(comment);
+                        _context.SaveChanges();
+                        return Ok(temp);
+                    }
                 }
                 else
                 {
-                    var temp = new Models.apimodel.Comment()
-                    {
-                        dislikes = comment.dislikes,
-                        id = comment.Id,
-                        likes = comment.likes,
-                        productId = comment.ProductId,
-                        SendDate = comment.SentDate,
-                        Text = comment.Text,
-                        userImage = user.ImageUrl,
-                        username = user.UserName
-                    };
-                    _context.comment.Remove(comment);
-                    return Ok(temp);
+                    return Forbid();
                 }
-            }
-            else
-            {
-                return Forbid();
-            }
 
+            }
+            else {
+                return Unauthorized();
+    ;            }
         }
 
 
+        [Authorize]
         [HttpPost]
         [Route("comments/")]
-        public IActionResult getAllComments([FromBody] Models.apimodel.CommentModel commentModel)
+        public IActionResult getAllComments([FromBody] Models.apimodel.postComment commentModel)
         {
 
             try
             {
+                Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier).ToString());
+                
                 if (!ModelState.IsValid)
                 {
                     return BadRequest(ModelState);
                 }
-                Models.apimodel.Comments allComments = new Models.apimodel.Comments();
+                if (userId != null)
+                {
+                    var commentToAdd = new Comment();
 
 
-                _context.SaveChanges();
-                return Ok(allComments);
+                    if (commentModel.userId == commentModel.userId)
+                    {
 
+                        commentToAdd.Id = Guid.NewGuid();
+                        commentToAdd.UserId = commentModel.userId;
+                        commentToAdd.ProductId = commentModel.productId;
+                        commentToAdd.dislikes = 0;
+                        commentToAdd.likes = 0;
+                        commentToAdd.SentDate = DateTime.Now;
+                        commentToAdd.Text = commentModel.text;
+
+
+                        _context.comment.Add(commentToAdd);
+                        _context.SaveChanges();
+                    }
+                    else
+                    {
+                        return Forbid();
+                    }
+                    _context.SaveChanges();
+
+                    Models.apimodel.Comment allComments = new Models.apimodel.Comment()
+                    {
+                        id = commentToAdd.Id,
+                        username = "test",
+                        userImage = "test",
+                        dislikes = 0,
+                        likes = 0,
+                        productId = commentToAdd.ProductId,
+                        SendDate = commentToAdd.SentDate,
+                        Text = commentToAdd.Text
+                    };
+                    return Ok(allComments);
+
+                }
+                else { 
+                    return Unauthorized();
+                }
+              
             }
 
             catch
@@ -286,8 +286,46 @@ namespace MyOnlineShop.Controllers
 
 
         }
+        
 
+        [HttpPut]
+        [Route("comments/{id:Guid}/likes")]
+        [Authorize]
+        public IActionResult putComment(Guid id, [FromBody] likeModel l)
+        {
+            try
+            {
+                var comment = _context.comment.Where(p => p.Id == id).Single();
+                if (comment == null) {
+                    return NotFound();
+                }
+                    
+                else
+                {
 
+                    if (l.like == true)
+                    {
+                        comment.likes = comment.likes + 1;
 
+                    }
+                    else
+                    {
+                        comment.dislikes = comment.dislikes + 1;
+
+                    }
+                    _context.Update(comment);
+                    _context.SaveChanges();
+                    if (!ModelState.IsValid)
+                    {
+                        return BadRequest(ModelState);
+                    }                 
+                    return Ok();
+                }
+            }
+            catch
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
     }
 }
