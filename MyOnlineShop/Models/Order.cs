@@ -15,7 +15,7 @@ namespace MyOnlineShop.Models
         public ProductPrice product { get; set; }
         [ForeignKey("CartID")]
         public Cart cart { get; set; }
-
+      
 
     }
 }

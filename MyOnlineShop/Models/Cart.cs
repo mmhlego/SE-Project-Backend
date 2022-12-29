@@ -13,7 +13,7 @@ namespace MyOnlineShop.Models
 
         [Required]
         public string Status { get; set; }
-
+        public double TotalPrice { get; set; }
        [Required]
        public string Discription { get; set; }
 

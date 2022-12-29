@@ -12,8 +12,8 @@ builder.Services.AddControllersWithViews();
 #region Db Context
 
 builder.Services.AddDbContext<MyShopContex>(options => {
-    options.UseSqlServer("Data Source =DESKTOP-TU89R0L\\EFI;Initial Catalog=SevenShop_DB;Integrated Security=true;Trust Server Certificate=true;");
-    //  options.UseSqlServer("Data Source=localhost,1433; Database=shopdatabase1; User Id=sa; Password=someThingComplicated1234; Trust Server Certificate=true;");
+    //options.UseSqlServer("Data Source =DESKTOP-TU89R0L\\EFI;Initial Catalog=SevenShop_DB;Integrated Security=true;Trust Server Certificate=true;");
+    options.UseSqlServer("Data Source=localhost,1433; Database=shopdatabase5; User Id=sa; Password=someThingComplicated1234; Trust Server Certificate=true;");
 });
 
 #endregion

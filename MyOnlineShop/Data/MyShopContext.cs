@@ -22,7 +22,7 @@ namespace MyOnlineShop.Data
         public DbSet<Comment> comment { get; set; }
 
         public DbSet<Customer> customer { get; set; }
-        public DbSet<GiftCard> giftCards { get; set; }
+        public DbSet<DiscountToken> tokens { get; set; }
         public DbSet<ProductPrice> productPrices { get; set; }
         public DbSet<RequestedProducts> requestedProducts { get; set; }
         public DbSet<Seller> sellers { get; set; }

@@ -207,10 +207,10 @@ namespace MyOnlineShop.Controllers
                         {
                             page = page,
                             tokensPerPage = tokensPerPage,
-                            tokens = _context.giftCards.Where(d => d.ExpirationDate < DateTime.Now && d.IsEvent == isEvent)
+                            tokens = _context.tokens.Where(d => d.ExpirationDate < DateTime.Now && d.IsEvent == isEvent)
                                                     .Skip((page - 1) * tokensPerPage)
                                                     .Take(tokensPerPage)
-                                                    .Select(u => new GiftCard
+                                                    .Select(u => new DiscountToken
                                                     {
                                                         Id = u.Id,
                                                         ExpirationDate = u.ExpirationDate,
@@ -230,10 +230,10 @@ namespace MyOnlineShop.Controllers
                         {
                             page = page,
                             tokensPerPage = tokensPerPage,
-                            tokens = _context.giftCards.Where(d => d.ExpirationDate >= DateTime.Now && d.IsEvent == isEvent)
+                            tokens = _context.tokens.Where(d => d.ExpirationDate >= DateTime.Now && d.IsEvent == isEvent)
                                                     .Skip((page - 1) * tokensPerPage)
                                                     .Take(tokensPerPage)
-                                                    .Select(u => new GiftCard
+                                                    .Select(u => new DiscountToken
                                                     {
                                                         Id = u.Id,
                                                         ExpirationDate = u.ExpirationDate,

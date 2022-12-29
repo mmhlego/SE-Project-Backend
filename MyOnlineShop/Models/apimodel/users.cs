@@ -37,7 +37,7 @@ namespace MyOnlineShop.Models.apimodel
     {
         public int tokensPerPage { get; set; }
         public int page { get; set; }
-        public List<GiftCard> tokens { get; set; }
+        public List<DiscountToken> tokens { get; set; }
 
     }
 

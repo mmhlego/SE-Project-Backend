@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace MyOnlineShop.Models
 {
-    public class GiftCard
+    public class DiscountToken
     {
         [Key]
         public Guid Id { get; set; }
