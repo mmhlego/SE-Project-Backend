@@ -262,7 +262,7 @@ namespace MyOnlineShop.Controllers
 
         [HttpPost]
         [Route("comments/")]
-        public IActionResult getAllComments([FromBody] Models.apimodel.CommentModel commentModel)
+        public IActionResult putaComments([FromBody] Models.apimodel.CommentModel commentModel)
         {
 
             try

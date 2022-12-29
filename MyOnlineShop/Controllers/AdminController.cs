@@ -137,7 +137,7 @@ namespace MyOnlineShop.Controllers
         {
             try
             {
-                GiftCard s = new GiftCard();
+                DiscountToken s = new DiscountToken();
                 if (!ModelState.IsValid)
                 {
                     return BadRequest(ModelState);
@@ -162,7 +162,7 @@ namespace MyOnlineShop.Controllers
         {
             try
             {
-                GiftCard s = new GiftCard();
+                DiscountToken s = new DiscountToken();
                 if (!ModelState.IsValid)
                 {
                     return BadRequest(ModelState);

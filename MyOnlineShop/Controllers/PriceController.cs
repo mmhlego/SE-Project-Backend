@@ -17,12 +17,13 @@ using FromBodyAttribute = Microsoft.AspNetCore.Mvc.FromBodyAttribute;
 using HttpDeleteAttribute = Microsoft.AspNetCore.Mvc.HttpDeleteAttribute;
 using HttpGetAttribute = Microsoft.AspNetCore.Mvc.HttpGetAttribute;
 using HttpPostAttribute = Microsoft.AspNetCore.Mvc.HttpPostAttribute;
+using HttpPutAttribute = Microsoft.AspNetCore.Mvc.HttpPutAttribute;
 using RouteAttribute = Microsoft.AspNetCore.Mvc.RouteAttribute;
 
 
 namespace MyOnlineShop.Controllers
 {
-    public class PriceController: ControllerBase
+    public class PriceController : ControllerBase
     {
         private MyShopContex _context;
         public PriceController(MyShopContex context)
@@ -34,8 +35,10 @@ namespace MyOnlineShop.Controllers
 
         [HttpGet]
         [Route("prices/")]
-        public ActionResult GetPrices( Guid sellerId = default(Guid), Guid productId = default(Guid), int pricesPerPage = 50, int page =1, double priceFrom = 0,double priceTo =100000000000, bool available = true) {
-            try {
+        public ActionResult GetPrices(Guid sellerId = default(Guid), Guid productId = default(Guid), int pricesPerPage = 50, int page = 1, double priceFrom = 0, double priceTo = 100000000000, bool available = true)
+        {
+            try
+            {
                 if (!ModelState.IsValid)
                 {
                     return BadRequest(ModelState);
@@ -46,45 +49,46 @@ namespace MyOnlineShop.Controllers
                 else
                 {
                     var prices = _context.productPrices.ToList();
-                if (sellerId != default(Guid)) {
-                    prices = prices.Where(p => p.SellerID == sellerId).ToList();
+                    if (sellerId != default(Guid))
+                    {
+                        prices = prices.Where(p => p.SellerID == sellerId).ToList();
 
-                }
-                if (productId != default(Guid))
-                {
-                    prices = prices.Where(p => p.ProductID == productId).ToList();
-                }
-                if(available == true)
-                {
-                    prices = prices.Where(p => p.Amount > 0).ToList();
+                    }
+                    if (productId != default(Guid))
+                    {
+                        prices = prices.Where(p => p.ProductID == productId).ToList();
+                    }
+                    if (available == true)
+                    {
+                        prices = prices.Where(p => p.Amount > 0).ToList();
 
-                }
-                else
-                {
-                    prices = prices.Where(p => p.Amount == 0).ToList();
-                }
+                    }
+                    else
+                    {
+                        prices = prices.Where(p => p.Amount == 0).ToList();
+                    }
                     prices = prices.Where(p => p.Price >= priceFrom && p.Price < priceTo).ToList();
 
-                if (prices != null)
-                {
-
-                    if ((page * pricesPerPage) - pricesPerPage < prices.Count)
+                    if (prices != null)
                     {
-                        if (page * pricesPerPage > prices.Count)
-                        {
-                            prices = prices.GetRange((page * pricesPerPage) - pricesPerPage, prices.Count);
 
-                        }
-                        else
+                        if ((page * pricesPerPage) - pricesPerPage < prices.Count)
                         {
-                            prices = prices.GetRange((page * pricesPerPage) - pricesPerPage, page * pricesPerPage);
+                            if (page * pricesPerPage > prices.Count)
+                            {
+                                prices = prices.GetRange((page * pricesPerPage) - pricesPerPage, prices.Count);
 
+                            }
+                            else
+                            {
+                                prices = prices.GetRange((page * pricesPerPage) - pricesPerPage, page * pricesPerPage);
+
+                            }
                         }
                     }
-                }
 
                     List<priceModel> priceModels = new List<priceModel>();
-                foreach (ProductPrice price1 in prices)
+                    foreach (ProductPrice price1 in prices)
                     {
                         Seller seller1 = _context.sellers.SingleOrDefault(s => s.ID == price1.SellerID);
                         User user = _context.users.SingleOrDefault(u => u.ID == seller1.UserId);
@@ -96,7 +100,8 @@ namespace MyOnlineShop.Controllers
                             dislikes = seller1.dislikes,
                             image = user.ImageUrl
                         };
-                        priceModel priceModel = new priceModel() {
+                        priceModel priceModel = new priceModel()
+                        {
                             id = price1.ID,
                             productId = price1.ProductID,
                             price = price1.Price,
@@ -104,13 +109,13 @@ namespace MyOnlineShop.Controllers
                             discount = price1.Discount,
                             priceHistory = price1.PriceHistory,
                             Seller = s
-                       
+
                         };
                         priceModels.Add(priceModel);
 
                     }
-               
-                  
+
+
 
                     ProductPrices p = new ProductPrices()
                     {
@@ -150,33 +155,35 @@ namespace MyOnlineShop.Controllers
                     {
                         return NotFound();
                     }
-                    if (accesslevel == "seller" )
+                    if (accesslevel == "seller")
                     {
-                        if ( product != null && checkseller == null)
+                        if (product != null && checkseller == null)
                         {
-                         
-                               var productPrice = new ProductPrice() {
-                                    Price = p1.Price,
-                                    PriceHistory = "[]",
-                                    Amount = p1.Amount,
-                                    Discount = p1.Discount,
-                                    SellerID = p1.SellerID,
-                                    ProductID = p1.ProductID,
-                                    ID = Guid.NewGuid()
-                                    
-                                };
+
+                            var productPrice = new ProductPrice()
+                            {
+                                Price = p1.Price,
+                                PriceHistory = "[]",
+                                Amount = p1.Amount,
+                                Discount = p1.Discount,
+                                SellerID = p1.SellerID,
+                                ProductID = p1.ProductID,
+                                ID = Guid.NewGuid()
+
+                            };
                             _context.productPrices.Add(productPrice);
                             _context.SaveChanges();
-                            SellerSchema s = new SellerSchema() {
-                            address = seller.Address,
-                            likes=seller.likes,
-                            dislikes=seller.dislikes,
-                            id=seller.ID,
-                            image= user.ImageUrl,
-                            information = seller.Information,
-                             name = user.FirstName+ " " + user.LastName,
-                            restricted=user.Restricted
-                           };
+                            SellerSchema s = new SellerSchema()
+                            {
+                                address = seller.Address,
+                                likes = seller.likes,
+                                dislikes = seller.dislikes,
+                                id = seller.ID,
+                                image = user.ImageUrl,
+                                information = seller.Information,
+                                name = user.FirstName + " " + user.LastName,
+                                restricted = user.Restricted
+                            };
                             priceModel priceModel = new priceModel()
                             {
                                 id = productPrice.ID,
@@ -201,7 +208,7 @@ namespace MyOnlineShop.Controllers
                     {
                         return Unauthorized();
                     }
-                    
+
                 }
             }
             catch { return StatusCode(StatusCodes.Status500InternalServerError); }
@@ -213,12 +220,12 @@ namespace MyOnlineShop.Controllers
         public ActionResult Getaprice(Guid id)
         {
             try
-            {   
+            {
                 if (!ModelState.IsValid)
                 {
                     return BadRequest(ModelState);
                 }
-                
+
                 else
                 {
                     var price1 = _context.productPrices.SingleOrDefault(p => p.ID == id);
@@ -232,7 +239,7 @@ namespace MyOnlineShop.Controllers
                         dislikes = ss.dislikes,
                         likes = ss.likes,
                         image = user.ImageUrl,
-                        name = user.FirstName+" "+user.LastName
+                        name = user.FirstName + " " + user.LastName
                     };
                     priceModel priceModel = new priceModel()
                     {
@@ -254,8 +261,8 @@ namespace MyOnlineShop.Controllers
 
 
 
-        [System.Web.Mvc.HttpPut]
-        [Route("prices/{id : Guid}")]
+        [HttpPut]
+        [Route("prices/{id:Guid}")]
         [Authorize]
         public ActionResult PutPrices(Guid id, [FromBody] PutPrice p1)
         {
@@ -329,6 +336,7 @@ namespace MyOnlineShop.Controllers
 
 
         [HttpDelete]
+        [Authorize]
         [Route("prices/{id:Guid}")]
         public ActionResult DeletePrice(Guid id)
         {
@@ -342,23 +350,24 @@ namespace MyOnlineShop.Controllers
                 {
 
                     Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier).ToString());
-                   
+
                     var accesslevel = User.FindFirstValue(ClaimTypes.Role).ToLower();
                     var productPrice = _context.productPrices.SingleOrDefault(p => p.ID == id);
                     if (productPrice == null)
                     { return NotFound(); }
 
-                    if (accesslevel == "seller" )
-                    {  var seller = _context.sellers.SingleOrDefault(s => s.UserId == userId);
+                    if (accesslevel == "seller")
+                    {
+                        var seller = _context.sellers.SingleOrDefault(s => s.UserId == userId);
                         var checkseller = _context.productPrices.SingleOrDefault(p => p.ID == id && p.SellerID == seller.ID);
-                         var user = _context.users.SingleOrDefault(u => u.ID == seller.UserId);
-                          if ( checkseller != null)
+                        var user = _context.users.SingleOrDefault(u => u.ID == seller.UserId);
+                        if (checkseller != null)
                         {
                             checkseller.Amount = 0;
 
                             _context.Update(checkseller);
-   
-                        
+
+
 
 
                             SellerSchema s = new SellerSchema()
@@ -383,21 +392,21 @@ namespace MyOnlineShop.Controllers
                                 Seller = s
 
                             };
-                            
+
 
                             return Ok(priceModel);
                         }
-                        
-                       else
+
+                        else
                         {
                             return Forbid();
                         }
 
-                    } 
+                    }
                     else
                     {
                         if (accesslevel == "admin")
-                        { 
+                        {
                             productPrice.Amount = 0;
                             _context.Update(productPrice);
                             _context.SaveChanges();
@@ -435,8 +444,8 @@ namespace MyOnlineShop.Controllers
                         {
                             return Unauthorized();
                         }
-                    }    
-                       
+                    }
+
                 }
             }
             catch { return StatusCode(StatusCodes.Status500InternalServerError); }
