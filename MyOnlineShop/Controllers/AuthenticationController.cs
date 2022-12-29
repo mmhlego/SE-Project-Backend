@@ -58,24 +58,38 @@ namespace MyOnlineShop.Controllers
 		{
 			if (!ModelState.IsValid)
 			{
-				return BadRequest(ModelState);
+				return StatusCode(StatusCodes.Status400BadRequest);
 			}
-			var user = _context.users.SingleOrDefault(u => u.UserName == registerModel.username);
-			if (user != null)
+            var status = new Dictionary<string, string>();
+            var username = _context.users.SingleOrDefault(u => u.UserName == registerModel.username);
+            var email = _context.users.SingleOrDefault(u => u.Email == registerModel.email);
+            if (username != null)
 			{
 				ModelState.AddModelError("UserName", "This UserName Has been registered Already");
-			}
-
-			User user1 = new User()
+                status = new Dictionary<string, string>() { { "status", "Exists" } };
+            }/*else if(email != null)
 			{
-				UserName = registerModel.username,
-				Password = registerModel.password,
-				AccessLevel = "customer",
-				BirthDate = registerModel.birthDate,
-
-			};
-
-			var status = new Dictionary<string, string>() { { "status", "success" } };
+                ModelState.AddModelError("Email", "This Email Has been registered Already");
+            }*/
+			else
+			{
+				User user1 = new User()
+				{
+                    AccessLevel = registerModel.type,
+                    UserName = registerModel.username,
+					Password = registerModel.password,
+					FirstName = registerModel.firstName,
+					LastName = registerModel.lastName,
+					PhoneNumber = registerModel.phoneNumber,
+					Email = registerModel.email,
+					BirthDate = registerModel.birthDate
+				};
+				if(user1 == null)
+				{
+                    status = new Dictionary<string, string>() { { "status", "Failed" } };
+                }
+				status = new Dictionary<string, string>() { { "status", "Success" } };
+			}
 			return Ok(status);
 		}
 		[HttpGet]
