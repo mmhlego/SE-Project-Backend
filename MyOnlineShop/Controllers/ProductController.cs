@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using System.Web.Http;
 using MyOnlineShop.Models;
 using System;
@@ -14,6 +14,8 @@ using HttpDeleteAttribute = Microsoft.AspNetCore.Mvc.HttpDeleteAttribute;
 using MyOnlineShop.Models.apimodel;
 using HttpPutAttribute = Microsoft.AspNetCore.Mvc.HttpPutAttribute;
 using System.Xml.Linq;
+using System.Security.Claims;
+using FsCheck;
 
 namespace MyOnlineShop.Controllers
 {
@@ -32,16 +34,30 @@ namespace MyOnlineShop.Controllers
 
         {
 
-             List<ProductPrice> product1= new List<ProductPrice>();
-            if (p1.available == true)
+            List<ProductPrice> product1 = _context.productPrices.ToList();
+          
+             if (p1.available == true)
             {
-                product1 = _context.productPrices.Where(p => p.Price >= p1.priceFrom && p.Price <= p1.priceTo && p.Amount > 0 && p.product.Category == p1.catagory).ToList();
+                product1 = _context.productPrices.Where(p => p.Price >= p1.priceFrom && p.Price <= p1.priceTo && p.Amount > 0).ToList();
             }
             else
             {
-                product1 = _context.productPrices.Where(p => p.Price >= p1.priceFrom && p.Price <= p1.priceTo && p.Amount == 0 && p.product.Category == p1.catagory).ToList();
+                product1 = _context.productPrices.Where(p => p.Price >= p1.priceFrom && p.Price <= p1.priceTo && p.Amount == 0).ToList();
             }
-
+             
+             if(p1.catagory != null)
+            {
+                List<ProductPrice> productPrices = new List<ProductPrice>();
+                foreach(ProductPrice p in product1)
+                {
+                    var item = _context.Products.SingleOrDefault(x => x.ID == p.ProductID);
+                    if (item.Category == p1.catagory)
+                    {
+                        productPrices.Add(p);
+                    }
+                }
+                product1 = productPrices;
+            }
              List<ProductPrice> products = new List<ProductPrice>();
        
             if ((p1.page * p1.productsPerPage) - p1.productsPerPage < product1.Count)
@@ -61,14 +77,15 @@ namespace MyOnlineShop.Controllers
             List<productModel> productModels = new List<productModel>();
             foreach (ProductPrice productPrice in products)
             {
-                productModel p = new () {
-                id = productPrice.product.ID,
-                image=productPrice.product.Image,
-                name=productPrice.product.Name,
-                category=productPrice.product.Category,
-                description=productPrice.product.Descriptiopn,
-                dislikes=1,
-                likes=1};
+                var eachproduct = _context.Products.SingleOrDefault(p => p.ID == productPrice.ProductID);
+                productModel p = new productModel() {
+                id = eachproduct.ID,
+                image= eachproduct.Image,
+                name= eachproduct.Name,
+                category= eachproduct.Category,
+                description= eachproduct.Descriptiopn,
+                dislikes= eachproduct.dislikes,
+                likes= eachproduct.likes};
                 productModels.Add(p);
             }
 
@@ -77,8 +94,8 @@ namespace MyOnlineShop.Controllers
                 page = p1.page,
                 productsPerPage = p1.productsPerPage,
                 products = productModels
-                
             };
+           
             return Ok(m);
 
         }
@@ -86,6 +103,7 @@ namespace MyOnlineShop.Controllers
 
         [HttpPost]
         [Route("products/")]
+        [Authorize]
         public ActionResult AddProduct([FromBody] ProductPagePostRequestModel p1)
         {
             try
@@ -94,9 +112,53 @@ namespace MyOnlineShop.Controllers
                 {
                     return BadRequest(ModelState);
                 }
-                productsModel product = new productsModel();
 
-                return Ok(product);
+                Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier).ToString());
+                
+
+                if (userId != null)
+                {
+                    var user = _context.users.SingleOrDefault(u => u.ID == userId);
+                    var accessLevel = user.AccessLevel.ToLower();
+                    if (accessLevel == "seller" || accessLevel == "admin")
+                    {
+                        
+                        Product productToAdd = new Product() {
+
+                            ID = Guid.NewGuid(),
+                            Category = p1.category,
+                            Name = p1.name,
+                            Image = p1.image,
+                            Descriptiopn = p1.description,
+                            likes = 0,
+                            dislikes=0
+                            
+                        };
+                        productModel pmod = new productModel(){
+                            id = productToAdd.ID,
+                            category = productToAdd.Category,
+                            name = productToAdd.Name,
+                            image = productToAdd.Image,
+                            description = productToAdd.Descriptiopn,
+                            likes = 0,
+                            dislikes = 0
+                        };
+                        _context.Add(productToAdd);
+                        _context.SaveChanges();
+                        return Ok(pmod);
+                    }
+                    else {
+                        return Forbid();
+                    }
+;                }
+                else { 
+                return Unauthorized();
+                }
+
+                              
+
+
+                
 
             }
 
@@ -112,7 +174,7 @@ namespace MyOnlineShop.Controllers
         [HttpGet]
         [Route("products/{id:Guid}")]
         public ActionResult GetProduct(Guid id)
-        {
+        {   
             try
             {
                 var products = _context.Products.SingleOrDefault((p) => p.ID == id);
@@ -148,32 +210,59 @@ namespace MyOnlineShop.Controllers
 
         [HttpDelete]
         [Route("products/{id:Guid}")]
+        [Authorize]
         public ActionResult DeleteProduct(Guid id)
         {
             try
             {
-                var products = _context.Products.SingleOrDefault((p) => p.ID == id);
-                var p1 = new productModel()
-                {
-                    category = products.Category,
-                    description = products.Descriptiopn,
-                    id = products.ID,
-                    dislikes = products.dislikes,
-                    likes = products.likes,
-                    image = products.Image,
-                    name = products.Name
-
-                };
-                if (products == null)
-                {
-                    return NotFound();
-                }
-                else _context.Products.Remove(products);
                 if (!ModelState.IsValid)
                 {
                     return BadRequest(ModelState);
                 }
-                return Ok(p1);
+
+                Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier).ToString());
+
+
+                if (userId != null)
+                {
+                    var user = _context.users.SingleOrDefault(u => u.ID == userId);
+                    var accessLevel = user.AccessLevel.ToLower();
+                    if (accessLevel == "admin")
+                    {
+
+                        var products = _context.Products.SingleOrDefault((p) => p.ID == id);
+                        var p1 = new productModel()
+                        {
+                            category = products.Category,
+                            description = products.Descriptiopn,
+                            id = products.ID,
+                            dislikes = products.dislikes,
+                            likes = products.likes,
+                            image = products.Image,
+                            name = products.Name
+
+                        };
+                        var Productprice = _context.productPrices.Where(p => p.ID == id).Single();
+                        if (Productprice == null)
+                        {
+                            return NotFound();
+                        }
+                        else
+                        {
+                            Productprice.Amount = 0;
+                            _context.Update(Productprice);
+                            _context.SaveChanges();
+                        }
+
+                        return Ok(p1);
+                    }
+                    else { 
+                    return Forbid();
+                    }
+                }
+                else {
+                    return Unauthorized();
+                }
             }
             catch
             {
@@ -185,6 +274,7 @@ namespace MyOnlineShop.Controllers
 
         [HttpPut]
         [Route("products/{id:Guid}")]
+        [Authorize]
         public ActionResult putProduct(Guid id,[FromBody] ProductPagePostRequestModel p1)
         {
             try
@@ -193,10 +283,56 @@ namespace MyOnlineShop.Controllers
                 {
                     return BadRequest(ModelState);
                 }
-                productsModel product = new productsModel();
+                Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier).ToString());
 
-                return Ok(product);
 
+                if (userId != null)
+                {
+                    var user = _context.users.SingleOrDefault(u => u.ID == userId);
+                    var accessLevel = user.AccessLevel.ToLower();
+                    if (accessLevel == "seller" || accessLevel == "admin")
+                    {
+
+                        var product = _context.Products.Where(p => p.ID == id).Single();
+                        if (product != null)
+                        {
+                            if (p1.name != null) { product.Name = p1.name; }
+
+                            if (p1.category != null) { product.Category = p1.category; }
+
+                            if (p1.description != null) { product.Descriptiopn = p1.description; }
+
+                            if (p1.image != null) { product.Image = p1.image; }
+
+                            _context.Update(product);
+                            _context.SaveChanges();
+                            var p2 = new productModel()
+                            {
+                                category = p1.category,
+                                description = p1.description,
+                                id = id,
+                                dislikes = 0,
+                                likes = 0,
+                                image = p1.image,
+                                name = p1.name
+
+                            };
+
+                            return Ok(p2);
+                        }
+                        else
+                        {
+                            return NotFound();
+                        }
+                    }
+                    else {
+                    
+                    return Forbid();
+                    }
+                }
+                else {
+                    return Unauthorized();
+                }
             }
 
             catch
@@ -206,68 +342,62 @@ namespace MyOnlineShop.Controllers
 
         }
 
-        //[HttpGet]
-        //[Route("products/{id:Guid}/sellers")]
-        //public ActionResult GetSellerProduct(Guid id)
-        //{
-        //    try
-        //    {
-        //        var sellers = _context.productPrices.Where(p => p.ProductID == id);
-        //        if (sellers == null)
-        //        {
-        //            return NotFound();
-        //        }
-        //        if (!ModelState.IsValid)
-        //        {
-        //            return BadRequest(ModelState);
-        //        }
-        //        return Ok(sellers);
-        //    }
-        //    catch
-        //    {
-        //        return StatusCode(StatusCodes.Status500InternalServerError);
-        //    }
-        //}
-        //[HttpPost]
-        //[Route("products/")]
-        //public IActionResult GetAllProducts([FromBody] Product product)
-        //{
-
-        //    var products = _context.Products.ToList();
-        //    if (products == null)
-        //    {
-        //        return NotFound();
-        //    }
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
-        //    return Ok(products);
-
-        //}
-
-        //[HttpPost]
-        //[Route("products/")]
-        //public async Task<ActionResult<ProductPageResponseModel > > ShowallProducts([FromBody] ProductPageRequestModel reqbodyjson)
-        //{
-        //    try {
-        //        if (reqbodyjson == null)
-        //            return BadRequest();
-        //        var products = _context.Products.Where(p => p.);
-        //        ProductPageResponseModel res = new ProductPageResponseModel()
-        //        { page = reqbodyjson.page,
-        //            productsPerPage = reqbodyjson.productsPerPage,
 
 
+        [HttpPut]
+        [Route("products/{id:Guid}/likes")]
+        public ActionResult putProductlike(Guid id, [FromBody] likeModel l)
+        {
+            try
+            {
+                var product = _context.Products.Where(p => p.ID == id).Single();
+                if (product == null)
+                    return NotFound();
+                else
+                {
+
+                    if (l.like == true)
+                    {
+                        product.likes = product.likes + 1;
+                        
+                    }
+                    else
+                    {
+                        product.dislikes = product.dislikes + 1;
+                        
+                    }
+                    _context.Update(product);
+                    _context.SaveChanges();
+                    if (!ModelState.IsValid)
+                    {
+                        return BadRequest(ModelState);
+                    }
+
+                    productModel products = new productModel()
+                    {
+                        category = product.Category,
+                        description = product.Descriptiopn,
+                        id = product.ID,
+                        dislikes = product.dislikes,
+                        likes = product.likes,
+                        image = product.Image,
+                        name = product.Name
 
 
-        //        }
-        //    }
-        //    catch (Exception){
+                    };
 
-        //        return StatusCode(StatusCodes.Status500InternalServerError);
-        //    }
-        //}
+                    return Ok(products);
+
+                }
+            }
+            catch
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+
+        }
+
+       
     }
 
 }

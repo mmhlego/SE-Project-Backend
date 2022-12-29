@@ -9,9 +9,17 @@ namespace MyOnlineShop.Models.apimodel
       
     }
     public class ProductPageGetRequestModel
-    {
+    {   public ProductPageGetRequestModel()
+        {
+            productsPerPage = 50;
+            page = 1;
+            priceTo = 1000000000000;
+            priceFrom = 0;
+            available = true;
+
+        }
         public int productsPerPage { get; set; }
-        public int page { get; set; }
+        public int page { get; set; } 
         public double priceFrom { get; set; }
         public double priceTo { get; set; }
         public Boolean available { get; set; }
