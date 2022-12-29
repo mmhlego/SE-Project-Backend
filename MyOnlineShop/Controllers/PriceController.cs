@@ -266,70 +266,126 @@ namespace MyOnlineShop.Controllers
         [Authorize]
         public ActionResult PutPrices(Guid id, [FromBody] PutPrice p1)
         {
+
+
             try
             {
                 if (!ModelState.IsValid)
                 {
                     return BadRequest(ModelState);
                 }
+
+
+                Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier).ToString());
+                var accesslevel = User.FindFirstValue(ClaimTypes.Role).ToLower();
+                ProductPrice productPrice = new ProductPrice();
+                if (accesslevel == "seller")
+                {
+                    var seller = _context.sellers.SingleOrDefault(s => s.UserId == userId);
+
+                    var checkseller = _context.productPrices.SingleOrDefault(p => p.ID == id && p.SellerID == seller.ID);
+                    var user = _context.users.SingleOrDefault(u => u.ID == seller.UserId);
+
+
+                    if (checkseller != null)
+                    {
+                        checkseller.Price = p1.Price;
+                        checkseller.Amount = p1.Amount + checkseller.Amount;
+                        checkseller.Discount = p1.Discount;
+
+                        _context.Update(checkseller);
+
+                        _context.SaveChanges();
+                        productPrice = checkseller;
+
+
+                        SellerSchema s = new SellerSchema()
+                        {
+                            address = seller.Address,
+                            likes = seller.likes,
+                            dislikes = seller.dislikes,
+                            id = seller.ID,
+                            image = user.ImageUrl,
+                            information = seller.Information,
+                            name = user.FirstName + " " + user.LastName,
+                            restricted = user.Restricted
+                        };
+                        priceModel priceModel = new priceModel()
+                        {
+                            id = id,
+                            productId = productPrice.ProductID,
+                            price = productPrice.Price,
+                            amount = productPrice.Amount,
+                            discount = productPrice.Discount,
+                            priceHistory = productPrice.PriceHistory,
+                            Seller = s
+
+                        };
+
+                        return Ok(priceModel);
+                    }
+                    else
+                    {
+
+
+                        return Forbid();
+                    }
+                }
                 else
                 {
 
-                    Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier).ToString());
-                    var seller = _context.sellers.SingleOrDefault(s => s.UserId == userId);
-                    var accesslevel = User.FindFirstValue(ClaimTypes.Role).ToLower();
-                    var checkseller = _context.productPrices.SingleOrDefault(p => p.ID == id && p.SellerID == seller.ID);
-                    var user = _context.users.SingleOrDefault(u => u.ID == seller.UserId);
-                    if (accesslevel == "seller")
+                    if (accesslevel == "storekeeper")
                     {
 
-                        ProductPrice productPrice;
-                        if (checkseller != null)
+                        productPrice = _context.productPrices.SingleOrDefault(c => c.ID == id);
+                        var seller = _context.sellers.SingleOrDefault(s => s.ID == productPrice.SellerID);
+                        var user = _context.users.SingleOrDefault(u => u.ID == seller.UserId);
+                        if (productPrice == null)
                         {
-                            checkseller.Price = p1.Price;
-                            checkseller.Amount = p1.Amount + checkseller.Amount;
-                            checkseller.Discount = p1.Discount;
-
-                            _context.Update(checkseller);
-
-                            productPrice = checkseller;
-
-
-                            SellerSchema s = new SellerSchema()
-                            {
-                                address = seller.Address,
-                                likes = seller.likes,
-                                dislikes = seller.dislikes,
-                                id = seller.ID,
-                                image = user.ImageUrl,
-                                information = seller.Information,
-                                name = user.FirstName + " " + user.LastName,
-                                restricted = user.Restricted
-                            };
-                            priceModel priceModel = new priceModel()
-                            {
-                                id = id,
-                                productId = productPrice.ProductID,
-                                price = productPrice.Price,
-                                amount = productPrice.Amount,
-                                discount = productPrice.Discount,
-                                priceHistory = productPrice.PriceHistory,
-                                Seller = s
-
-                            };
-
-                            return Ok(priceModel);
+                            return NotFound();
                         }
-                        else
+                        productPrice.Price = p1.Price;
+                        productPrice.Amount = p1.Amount + productPrice.Amount;
+                        productPrice.Discount = p1.Discount;
+
+
+                        _context.Update(productPrice);
+
+                        _context.SaveChanges();
+                        SellerSchema s = new SellerSchema()
                         {
-                            return Forbid();
-                        }
+                            address = seller.Address,
+                            likes = seller.likes,
+                            dislikes = seller.dislikes,
+                            id = seller.ID,
+                            image = user.ImageUrl,
+                            information = seller.Information,
+                            name = user.FirstName + " " + user.LastName,
+                            restricted = user.Restricted
+                        };
+                        priceModel priceModel = new priceModel()
+                        {
+                            id = id,
+                            productId = productPrice.ProductID,
+                            price = productPrice.Price,
+                            amount = productPrice.Amount,
+                            discount = productPrice.Discount,
+                            priceHistory = productPrice.PriceHistory,
+                            Seller = s
+
+                        };
+
+                        return Ok(priceModel);
+
+
+
                     }
                     else
                     {
                         return Unauthorized();
                     }
                 }
+
             }
             catch { return StatusCode(StatusCodes.Status500InternalServerError); }
         }
@@ -346,9 +402,7 @@ namespace MyOnlineShop.Controllers
                 {
                     return BadRequest(ModelState);
                 }
-                else
-                {
-
+               
                     Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier).ToString());
 
                     var accesslevel = User.FindFirstValue(ClaimTypes.Role).ToLower();
@@ -366,7 +420,7 @@ namespace MyOnlineShop.Controllers
                             checkseller.Amount = 0;
 
                             _context.Update(checkseller);
-
+                            _context.SaveChanges();
 
 
 
@@ -446,7 +500,7 @@ namespace MyOnlineShop.Controllers
                         }
                     }
 
-                }
+                
             }
             catch { return StatusCode(StatusCodes.Status500InternalServerError); }
         }
