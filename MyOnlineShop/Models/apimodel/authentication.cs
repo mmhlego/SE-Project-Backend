@@ -14,6 +14,7 @@ namespace MyOnlineShop.Models.apimodel
         public string password { get; set; }
         public string firstname { get; set; }
         public string lastname { get; set; }
+        public DateTime birthDate { get; set; }
         public int likes { get; set; }
         public int dislikes { get; set; }
     }

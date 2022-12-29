@@ -6,6 +6,7 @@ using Microsoft.OpenApi.Validations.Rules;
 using MyOnlineShop.Data;
 using MyOnlineShop.Models;
 using MyOnlineShop.Models.apimodel;
+using NuGet.Protocol.Plugins;
 using System.Security.Claims;
 using System.Web.Http;
 using System.Web.Mvc;
@@ -145,25 +146,16 @@ namespace MyOnlineShop.Controllers
                     var product = _context.Products.SingleOrDefault(p => p.ID == p1.ProductID);
                     var checkseller = _context.productPrices.SingleOrDefault(p => p.ProductID == p1.ProductID && p.SellerID == seller.ID);
                     var user = _context.users.SingleOrDefault(u => u.ID == seller.UserId);
+                    if (product == null)
+                    {
+                        return NotFound();
+                    }
                     if (accesslevel == "seller" )
                     {
-                        if ( product != null)
+                        if ( product != null && checkseller == null)
                         {
-                            ProductPrice productPrice;
-                            if (checkseller != null)
-                            {
-                                checkseller.Price = p1.Price;
-                                checkseller.Amount = p1.Amount + checkseller.Amount;
-                                checkseller.Discount = p1.Discount;
-
-                                _context.Update(checkseller);
-                               
-                                productPrice = checkseller;
-
-                            }
-                            else {
-
-                                productPrice = new ProductPrice() {
+                         
+                               var productPrice = new ProductPrice() {
                                     Price = p1.Price,
                                     PriceHistory = "[]",
                                     Amount = p1.Amount,
@@ -171,12 +163,9 @@ namespace MyOnlineShop.Controllers
                                     SellerID = p1.SellerID,
                                     ProductID = p1.ProductID,
                                     ID = Guid.NewGuid()
+                                    
                                 };
-                                _context.productPrices.Add(productPrice);
-                                
-
-
-                            }
+                            _context.productPrices.Add(productPrice);
                             _context.SaveChanges();
                             SellerSchema s = new SellerSchema() {
                             address = seller.Address,
@@ -282,7 +271,6 @@ namespace MyOnlineShop.Controllers
                     Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier).ToString());
                     var seller = _context.sellers.SingleOrDefault(s => s.UserId == userId);
                     var accesslevel = User.FindFirstValue(ClaimTypes.Role).ToLower();
-                    var product = _context.Products.SingleOrDefault(p => p.ID == id);
                     var checkseller = _context.productPrices.SingleOrDefault(p => p.ID == id && p.SellerID == seller.ID);
                     var user = _context.users.SingleOrDefault(u => u.ID == seller.UserId);
                     if (accesslevel == "seller")
@@ -325,9 +313,15 @@ namespace MyOnlineShop.Controllers
 
                             return Ok(priceModel);
                         }
-                        return Forbid();
+                        else
+                        {
+                            return Forbid();
+                        }
                     }
-                    return Unauthorized();
+                    else
+                    {
+                        return Unauthorized();
+                    }
                 }
             }
             catch { return StatusCode(StatusCodes.Status500InternalServerError); }
@@ -348,18 +342,23 @@ namespace MyOnlineShop.Controllers
                 {
 
                     Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier).ToString());
-                    var seller = _context.sellers.SingleOrDefault(s => s.UserId == userId);
+                   
                     var accesslevel = User.FindFirstValue(ClaimTypes.Role).ToLower();
-                    var product = _context.Products.SingleOrDefault(p => p.ID == id);
-                    var checkseller = _context.productPrices.SingleOrDefault(p => p.ID == id && p.SellerID == seller.ID);
-                    var user = _context.users.SingleOrDefault(u => u.ID == seller.UserId);
-                    if (accesslevel == "seller" || accesslevel == "admin")
-                    {   if (checkseller != null) {
+                    var productPrice = _context.productPrices.SingleOrDefault(p => p.ID == id);
+                    if (productPrice == null)
+                    { return NotFound(); }
+
+                    if (accesslevel == "seller" )
+                    {  var seller = _context.sellers.SingleOrDefault(s => s.UserId == userId);
+                        var checkseller = _context.productPrices.SingleOrDefault(p => p.ID == id && p.SellerID == seller.ID);
+                         var user = _context.users.SingleOrDefault(u => u.ID == seller.UserId);
+                          if ( checkseller != null)
+                        {
                             checkseller.Amount = 0;
 
                             _context.Update(checkseller);
    
-                          var   productPrice = checkseller;
+                        
 
 
                             SellerSchema s = new SellerSchema()
@@ -384,6 +383,7 @@ namespace MyOnlineShop.Controllers
                                 Seller = s
 
                             };
+                            
 
                             return Ok(priceModel);
                         }
@@ -396,7 +396,45 @@ namespace MyOnlineShop.Controllers
                     } 
                     else
                     {
-                        return Unauthorized();
+                        if (accesslevel == "admin")
+                        { 
+                            productPrice.Amount = 0;
+                            _context.Update(productPrice);
+                            _context.SaveChanges();
+                            var seller = _context.sellers.SingleOrDefault(s => s.ID == productPrice.SellerID);
+                            var user = _context.users.SingleOrDefault(u => u.ID == seller.UserId);
+                            SellerSchema s = new SellerSchema()
+                            {
+                                address = seller.Address,
+                                likes = seller.likes,
+                                dislikes = seller.dislikes,
+                                id = seller.ID,
+                                image = user.ImageUrl,
+                                information = seller.Information,
+                                name = user.FirstName + " " + user.LastName,
+                                restricted = user.Restricted
+                            };
+                            priceModel priceModel = new priceModel()
+                            {
+                                id = id,
+                                productId = productPrice.ProductID,
+                                price = productPrice.Price,
+                                amount = productPrice.Amount,
+                                discount = productPrice.Discount,
+                                priceHistory = productPrice.PriceHistory,
+                                Seller = s
+
+                            };
+
+                            return Ok(priceModel);
+
+
+
+                        }
+                        else
+                        {
+                            return Unauthorized();
+                        }
                     }    
                        
                 }
