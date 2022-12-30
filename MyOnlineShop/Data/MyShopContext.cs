@@ -26,8 +26,6 @@ namespace MyOnlineShop.Data
 		public DbSet<RequestedProducts> requestedProducts { get; set; }
 		public DbSet<Seller> sellers { get; set; }
 		public DbSet<Stats> stats { get; set; }
-		public DbSet<DiscountToken> discountTokens { get; set; }
-
 
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)

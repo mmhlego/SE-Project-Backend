@@ -256,7 +256,7 @@ namespace MyOnlineShop.Controllers
 					};
 
                         
-                    _context.discountTokens.Add(tokenput);
+                    _context.tokens.Add(tokenput);
                     _context.SaveChanges();
                     return Ok(tokenput);
 
@@ -280,14 +280,14 @@ namespace MyOnlineShop.Controllers
 		{
 				try
 				{
-					var delToken = _context.discountTokens.SingleOrDefault(p => p.Id == id);
+					var delToken = _context.tokens.SingleOrDefault(p => p.Id == id);
 					if(delToken == null)
 					{
 						return StatusCode(StatusCodes.Status404NotFound);
 					}
 					else
 					{
-						_context.discountTokens.Remove(delToken);
+						_context.tokens.Remove(delToken);
 						_context.SaveChanges();
 						
 					}
