@@ -156,22 +156,29 @@ namespace MyOnlineShop.Controllers
 		{
 			try
 			{
-                var ss = _context.sellers.SingleOrDefault((p) => p.ID == sellerId);
-                var user = _context.users.SingleOrDefault(p => p.ID == ss.UserId);
-                SellerSchema schema = new SellerSchema()
-				{
-					information = s.information,
-					address = s.address,
-					id = ss.ID,
-					dislikes = ss.dislikes,
-					likes = ss.likes,
-					image = user.ImageUrl,
-					name = ss.user.UserName
-				};
-				if (ss == null)
+				Seller schema = new Seller();
+                var ss = _context.sellers.SingleOrDefault((p) => p.UserId == sellerId);
+
+                if (ss == null)
 				{
 					return StatusCode(StatusCodes.Status404NotFound);
 				}
+				else
+				{
+                    var user = _context.users.SingleOrDefault(p => p.ID == ss.UserId);
+                    schema = new Seller()
+					{
+						Information = s.information,
+						Address = s.address,
+						UserId = ss.UserId,
+						dislikes = ss.dislikes,
+						likes = ss.likes,
+						user = user
+					};
+					_context.sellers.Add(schema);
+					_context.SaveChanges();
+				}
+				
 				if (!ModelState.IsValid)
 				{
 					return StatusCode(StatusCodes.Status400BadRequest);
@@ -229,10 +236,8 @@ namespace MyOnlineShop.Controllers
 		{
 			try
 			{
-				SellerSchema seller = new SellerSchema();
-                //var user = _context.users.SingleOrDefault(p => p.ID == ss.UserId);
+				Seller seller = new Seller();
                 var SellerId = _context.sellers.SingleOrDefault(l => l.UserId == id);
-                var user = _context.users.SingleOrDefault(p => p.ID == SellerId.UserId);
 
                 if (SellerId == null)
 				{
@@ -240,28 +245,32 @@ namespace MyOnlineShop.Controllers
 				}
 				else
 				{
+                    var user = _context.users.SingleOrDefault(p => p.ID == SellerId.UserId);
 					if (like)
 					{
-						seller.id = SellerId.UserId;
-						seller.name = SellerId.user.FirstName + " " + SellerId.user.LastName;
-						seller.image = user.ImageUrl;
-						seller.address = SellerId.Address;
-						seller.information = SellerId.Information;
-						seller.likes++;
-						seller.dislikes = SellerId.dislikes;
-						seller.restricted = SellerId.user.Restricted;
+						seller = new Seller()
+						{
+							likes = seller.likes + 1,
+							Address = SellerId.Address,
+							Information = SellerId.Information,
+							dislikes = SellerId.dislikes,
+							UserId = SellerId.UserId,
+							user = user
+						};
 					}
 					else
 					{
-						seller.id = SellerId.UserId;
-						seller.name = SellerId.user.FirstName + " " + SellerId.user.LastName;
-						seller.image = user.ImageUrl;
-						seller.address = SellerId.Address;
-						seller.information = SellerId.Information;
-						seller.likes = SellerId.likes;
-						seller.dislikes--;
-						seller.restricted = SellerId.user.Restricted;
-					}
+                        seller = new Seller()
+                        {
+                            likes = seller.likes,
+                            Address = SellerId.Address,
+                            Information = SellerId.Information,
+                            dislikes = SellerId.dislikes + 1,
+                            UserId = SellerId.UserId,
+                            user = user
+                        };
+                    }
+					_context.sellers.Add(seller);
 					_context.SaveChanges();
 				}
 				return Ok(seller);

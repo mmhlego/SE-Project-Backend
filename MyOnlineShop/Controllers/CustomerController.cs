@@ -3,6 +3,7 @@ using MyOnlineShop.Data;
 using HttpGetAttribute = Microsoft.AspNetCore.Mvc.HttpGetAttribute;
 using RouteAttribute = Microsoft.AspNetCore.Mvc.RouteAttribute;
 using MyOnlineShop.Models.apimodel;
+using MyOnlineShop.Models;
 using HttpPutAttribute = Microsoft.AspNetCore.Mvc.HttpPutAttribute;
 using System.Data;
 
@@ -111,28 +112,26 @@ namespace MyOnlineShop.Controllers
 		{
 			try
 			{
-				customerModel custput = new customerModel();
+                Customer custput = new Customer();
 				var CustomerId = _context.customer.SingleOrDefault(p => p.UserId == id);
+				
 				if (CustomerId == null)
 				{
 					return StatusCode(StatusCodes.Status404NotFound);
 				}
 				else
 				{
-					custput = new customerModel()
+                    var user = _context.users.SingleOrDefault(f => f.ID == CustomerId.UserId);
+                    custput = new Customer()
 					{
-						id = id,
-						username = CustomerId.user.UserName,
-						firstName = CustomerId.user.FirstName,
-						lastName = CustomerId.user.LastName,
-						phoneNumber = CustomerId.user.PhoneNumber,
-						email = CustomerId.user.Email,
-						profileImage = CustomerId.user.ImageUrl,
-						birthDate = CustomerId.user.BirthDate,
-						restricted = CustomerId.user.Restricted,
-						address = custupdate.address,
-						balance = custupdate.balance
+						UserId = id,
+						CartId = CustomerId.CartId,
+						cart = CustomerId.cart,
+						user = CustomerId.user,
+						Address = custupdate.address,
+						Balance = custupdate.balance
 					};
+					_context.customer.Add(custput);
 					_context.SaveChanges();
 					return Ok(custput);
 				}

@@ -6,12 +6,11 @@ using Newtonsoft.Json;
 using System.Data;
 using Microsoft.AspNetCore.Authorization;
 using MyOnlineShop.Data;
-
+using System.Web.Http.Filters;
 
 namespace MyOnlineShop.Controllers
 {
-
-	[Authorize(Roles = "Admin")]
+	[Authorize(Roles = "admin,Admin,Administrator")]
 	public class AdminController : ControllerBase
 	{
 		private readonly MyShopContext _context;
@@ -59,42 +58,29 @@ namespace MyOnlineShop.Controllers
 		[Route("admin/users/{id}")]
 		public ActionResult eachuserget(Guid id)
 		{
-			if (User.IsInRole("Admin"))
-			{
+
 				try
 				{
-					string finderQry = ("select * from User where id = " + id);
-					SqlConnectionStringBuilder conn = new SqlConnectionStringBuilder();
-					SqlConnection connect = new SqlConnection(conn.ConnectionString);
-					connect.Open();
-					SqlDataAdapter da = new SqlDataAdapter();
-					SqlCommand samplecommand = new SqlCommand(finderQry, connect);
-					da.SelectCommand = samplecommand;
-					DataSet ds = new DataSet();
-
-					da.Fill(ds);
-					if (ds == null)
-						return StatusCode(StatusCodes.Status404NotFound);
-					else
+					var userId = _context.users.SingleOrDefault(p => p.ID == id);
+					var user = new userModel
 					{
-						var user_in_json_id = JsonConvert.SerializeObject(ds);
-
-						if (!ModelState.IsValid)
-						{
-							return StatusCode(StatusCodes.Status400BadRequest);
-						}
-						return Content(user_in_json_id);
-					}
-				}
+						id = userId.ID,
+						username = userId.UserName,
+						firstName = userId.FirstName,
+						lastName = userId.LastName,
+						phoneNumber = userId.PhoneNumber,
+						email = userId.Email,
+						profileImage = userId.ImageUrl,
+						birthDate = userId.BirthDate,
+						accessLevel = userId.AccessLevel,
+						restricted = userId.Restricted
+					};
+					return Ok(user);
+                }
 				catch
 				{
 					return StatusCode(StatusCodes.Status500InternalServerError);
 				}
-			}
-			else
-				return StatusCode(StatusCodes.Status403Forbidden);
-
-
 		}
 
 
@@ -103,39 +89,49 @@ namespace MyOnlineShop.Controllers
 		[Route("admin/users/{id}")]
 		public ActionResult userput(Guid id, [FromBody] userreqModel req)
 		{
-			if (User.IsInRole("Admin"))
-			{
-				try
-				{
-					string updateQry = ("update User set phoneNumber = " + req.phoneNumber + ", email = " + req.email + ", accessLevel = " + req.accessLevel + ", restricted = " + req.restricted + " where id = " + id);
-					SqlConnectionStringBuilder conn = new SqlConnectionStringBuilder();
-					//userModel s = new userModel();
-					SqlConnection connect = new SqlConnection(conn.ConnectionString);
-					connect.Open();
-					SqlDataAdapter da = new SqlDataAdapter();
-					SqlCommand samplecommand = new SqlCommand(updateQry, connect);
-					da.SelectCommand = samplecommand;
-					DataSet ds = new DataSet();
-					da.Fill(ds);
-					var user_in_json_id_up = JsonConvert.SerializeObject(ds);
 
-					if (!ModelState.IsValid)
-					{
-						return StatusCode(StatusCodes.Status400BadRequest);
-					}
-					return Content(user_in_json_id_up);
-				}
-				catch
-				{
-					return StatusCode(StatusCodes.Status500InternalServerError);
-				}
-			}
-			else
-				return StatusCode(StatusCodes.Status403Forbidden);
+            try
+            {
+                User userput = new User();
+                var userId = _context.users.SingleOrDefault(p => p.ID == id);
 
+                if (userId == null)
+                {
+                    return StatusCode(StatusCodes.Status404NotFound);
+                }
+                else
+                {
+                    userput = new User()
+                    {
+                        ID = userId.ID,
+						UserName = userId.UserName,
+                        FirstName = userId.FirstName,
+                        LastName = userId.LastName,
+                        ImageUrl = userId.ImageUrl,
+                        Password = userId.Password,
+						BirthDate = userId.BirthDate,
+						customers = userId.customers,
+						sellers = userId.sellers,
+						PhoneNumber = req.phoneNumber,
+						Email = req.email,
+						AccessLevel = req.accessLevel,
+						Restricted = req.restricted
+                    };
+                    _context.users.Add(userput);
+                    _context.SaveChanges();
+                    return Ok(userput);
+                }
 
-
-		}
+                if (!ModelState.IsValid)
+                {
+                    return StatusCode(StatusCodes.Status400BadRequest);
+                }
+            }
+            catch
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
 
 
 
@@ -144,43 +140,42 @@ namespace MyOnlineShop.Controllers
 		[Route("admin/users/{id}")]
 		public ActionResult userdelete(Guid id)
 		{
-			if (User.IsInRole("Admin"))
-			{
 				try
 				{
-					DataSet ds = new DataSet();
-					string deleteQry = ("update User set restrict = true where id = " + id);
-					SqlConnectionStringBuilder conn = new SqlConnectionStringBuilder();
-					//userModel s = new userModel();
-					SqlConnection connect = new SqlConnection(conn.ConnectionString);
-					connect.Open();
-					SqlDataAdapter da = new SqlDataAdapter();
-					SqlCommand samplecommand = new SqlCommand(deleteQry, connect);
-					da.SelectCommand = samplecommand;
-					da.Fill(ds);
-					if (ds == null)
+					User userput = new User();
+					var userId = _context.users.SingleOrDefault(p => p.ID == id);
+					bool restricted = true;
+					if (userId == null)
+					{
 						return StatusCode(StatusCodes.Status404NotFound);
+					}
 					else
 					{
-						var user_in_json_id = JsonConvert.SerializeObject(ds);
-
-						if (!ModelState.IsValid)
+						userput = new User()
 						{
-							return StatusCode(StatusCodes.Status400BadRequest);
-						}
-						return Content(user_in_json_id);
+							ID = userId.ID,
+							UserName = userId.UserName,
+							FirstName = userId.FirstName,
+							LastName = userId.LastName,
+							ImageUrl = userId.ImageUrl,
+							Password = userId.Password,
+							BirthDate = userId.BirthDate,
+							customers = userId.customers,
+							sellers = userId.sellers,
+							PhoneNumber = userId.PhoneNumber,
+							Email = userId.Email,
+							AccessLevel = userId.AccessLevel,
+							Restricted = restricted
+						};
+						_context.users.Add(userput);
+						_context.SaveChanges();
+						return Ok(userput);
 					}
 				}
 				catch
 				{
 					return StatusCode(StatusCodes.Status500InternalServerError);
 				}
-			}
-			else
-				return StatusCode(StatusCodes.Status403Forbidden);
-
-
-
 		}
 
 
@@ -189,8 +184,6 @@ namespace MyOnlineShop.Controllers
 		[Route("admin/discountTokens")]
 		public ActionResult<IEnumerable<tokensModel>> discountTokens(bool isEvent, bool expired, [FromQuery] int page, [FromQuery] int tokensPerPage)
 		{
-			if (User.IsInRole("Admin"))
-			{
 				try
 				{
 					var tokens = new tokensModel();
@@ -245,54 +238,37 @@ namespace MyOnlineShop.Controllers
 				{
 					return StatusCode(StatusCodes.Status500InternalServerError);
 				}
-			}
-			else
-				return StatusCode(StatusCodes.Status403Forbidden);
 		}
 
 
 
 		[HttpPost]
 		[Route("admin/discountTokens")]
-		public ActionResult discountTokenspost([FromBody] tokenreqModel tokenreq)
+		public ActionResult discountTokenspost([FromBody] tokenreqModel tokenputter)
 		{
-			if (User.IsInRole("Admin"))
-			{
 				try
 				{
-					DataSet ds = new DataSet();
-					string insertQry = ("insert into GiftCard (ExpirationDate, Discount, IsEvent) values (" + tokenreq.ExpirationDate + ", " + tokenreq.Discount + ", " + tokenreq.IsEvent + ")");
-					SqlConnectionStringBuilder conn = new SqlConnectionStringBuilder();
-
-					SqlConnection connect = new SqlConnection(conn.ConnectionString);
-					connect.Open();
-					SqlDataAdapter da = new SqlDataAdapter();
-					SqlCommand samplecommand = new SqlCommand(insertQry, connect);
-					da.SelectCommand = samplecommand;
-					da.Fill(ds);
-					if (ds == null)
-						return StatusCode(StatusCodes.Status404NotFound);
-					else
+					DiscountToken tokenput = new DiscountToken()
 					{
-						var insert_token_in_json = JsonConvert.SerializeObject(ds);
+						ExpirationDate = tokenputter.ExpirationDate,
+						Discount = tokenputter.Discount,
+						IsEvent = tokenputter.IsEvent
+					};
 
-						if (!ModelState.IsValid)
-						{
-							return StatusCode(StatusCodes.Status400BadRequest);
-						}
-						return Content(insert_token_in_json);
-					}
-				}
+                        
+                    _context.discountTokens.Add(tokenput);
+                    _context.SaveChanges();
+                    return Ok(tokenput);
+
+                    if (!ModelState.IsValid)
+                    {
+                        return StatusCode(StatusCodes.Status400BadRequest);
+                    }
+                }
 				catch
 				{
 					return StatusCode(StatusCodes.Status500InternalServerError);
 				}
-			}
-			else
-				return StatusCode(StatusCodes.Status403Forbidden);
-
-
-
 		}
 
 
@@ -302,43 +278,25 @@ namespace MyOnlineShop.Controllers
 		[Route("admin/discountTokens/{id}")]
 		public ActionResult discountTokensdelete(Guid id)
 		{
-			if (User.IsInRole("Admin"))
-			{
 				try
 				{
-					DataSet ds = new DataSet();
-					string deleteQry = ("delete * from GiftCard where id = " + id);
-					SqlConnectionStringBuilder conn = new SqlConnectionStringBuilder();
-
-					SqlConnection connect = new SqlConnection(conn.ConnectionString);
-					connect.Open();
-					SqlDataAdapter da = new SqlDataAdapter();
-					SqlCommand samplecommand = new SqlCommand(deleteQry, connect);
-					da.SelectCommand = samplecommand;
-					da.Fill(ds);
-					if (ds == null)
+					var delToken = _context.discountTokens.SingleOrDefault(p => p.Id == id);
+					if(delToken == null)
+					{
 						return StatusCode(StatusCodes.Status404NotFound);
+					}
 					else
 					{
-						var delete_token_in_json = JsonConvert.SerializeObject(ds);
-
-						if (!ModelState.IsValid)
-						{
-							return StatusCode(StatusCodes.Status400BadRequest);
-						}
-						return Content(delete_token_in_json);
+						_context.discountTokens.Remove(delToken);
+						_context.SaveChanges();
+						
 					}
-				}
-				catch
+                    return Ok();
+                }
+                catch
 				{
 					return StatusCode(StatusCodes.Status500InternalServerError);
 				}
-			}
-			else
-				return StatusCode(StatusCodes.Status403Forbidden);
-
-
-
 		}
 
 		[HttpGet]
@@ -364,7 +322,7 @@ namespace MyOnlineShop.Controllers
 								{
 									id = u.ID,
 									customerId = u.CustomerID,
-									products = _context.productPrices.Select(l => new eachproduct
+									products = _context.productPrices.Where(f => f.SellerID == userId).Select(l => new eachproduct
 									{
 										productId = l.ProductID,
 										amount = l.Amount
@@ -386,7 +344,7 @@ namespace MyOnlineShop.Controllers
 								{
 									id = u.ID,
 									customerId = u.CustomerID,
-									products = _context.productPrices.Select(l => new eachproduct
+									products = _context.productPrices.Where(f => f.SellerID == userId).Select(l => new eachproduct
 									{
 										productId = l.ProductID,
 										amount = l.Amount
@@ -413,7 +371,7 @@ namespace MyOnlineShop.Controllers
 								{
 									id = u.ID,
 									customerId = u.CustomerID,
-									products = _context.productPrices.Select(l => new eachproduct
+									products = _context.productPrices.Where(f => f.SellerID == userId).Select(l => new eachproduct
 									{
 										productId = l.ProductID,
 										amount = l.Amount
@@ -435,7 +393,7 @@ namespace MyOnlineShop.Controllers
 								{
 									id = u.ID,
 									customerId = u.CustomerID,
-									products = _context.productPrices.Select(l => new eachproduct
+									products = _context.productPrices.Where(f => f.SellerID == userId).Select(l => new eachproduct
 									{
 										productId = l.ProductID,
 										amount = l.Amount
@@ -462,7 +420,7 @@ namespace MyOnlineShop.Controllers
 							{
 								id = u.ID,
 								customerId = u.CustomerID,
-								products = _context.productPrices.Select(l => new eachproduct
+								products = _context.productPrices.Where(f => f.SellerID == userId).Select(l => new eachproduct
 								{
 									productId = l.ProductID,
 									amount = l.Amount
@@ -484,7 +442,7 @@ namespace MyOnlineShop.Controllers
 							{
 								id = u.ID,
 								customerId = u.CustomerID,
-								products = _context.productPrices.Select(l => new eachproduct
+								products = _context.productPrices.Where(f => f.SellerID == userId).Select(l => new eachproduct
 								{
 									productId = l.ProductID,
 									amount = l.Amount
@@ -513,39 +471,36 @@ namespace MyOnlineShop.Controllers
 		[Route("admin/carts/{id:Guid}")]
 		public ActionResult admincart(Guid id)
 		{
-			if (User.IsInRole("Admin"))
-			{
 				try
 				{
-					string finderQry = ("select * from Cart where id = " + id);
-					SqlConnectionStringBuilder conn = new SqlConnectionStringBuilder();
-					SqlConnection connect = new SqlConnection(conn.ConnectionString);
-					connect.Open();
-					SqlDataAdapter da = new SqlDataAdapter();
-					SqlCommand samplecommand = new SqlCommand(finderQry, connect);
-					da.SelectCommand = samplecommand;
-					DataSet ds = new DataSet();
-					da.Fill(ds);
-					if (ds == null)
+					var cartId = _context.cart.SingleOrDefault(p => p.ID == id);
+
+					if (cartId == null)
+					{
 						return StatusCode(StatusCodes.Status404NotFound);
+					}
 					else
 					{
-						var cart_in_json_id = JsonConvert.SerializeObject(ds);
-
-						if (!ModelState.IsValid)
+						eachCart cart = new eachCart()
 						{
-							return StatusCode(StatusCodes.Status400BadRequest);
-						}
-						return Content(cart_in_json_id);
+							id = cartId.ID,
+							customerId = cartId.CustomerID,
+                            products = _context.productPrices.Where(f => f.SellerID == id).Select(l => new eachproduct
+                            {
+                                productId = l.ProductID,
+                                amount = l.Amount
+                            }).ToList(),
+							status = cartId.Status,
+							description = cartId.Discription,
+							updateDate = cartId.UpdateDate
+                        };
+						return Ok(cart);
 					}
 				}
 				catch
 				{
 					return StatusCode(StatusCodes.Status500InternalServerError);
 				}
-			}
-			else
-				return StatusCode(StatusCodes.Status403Forbidden);
 		}
 
 
@@ -556,35 +511,34 @@ namespace MyOnlineShop.Controllers
 		[Route("admin/carts/{id}")]
 		public ActionResult admincartsput(Guid id, string status)
 		{
-			if (User.IsInRole("Admin"))
-			{
-				try
-				{
-					string updateQry = ("update Cart set status = " + status + " where id = " + id);
-					SqlConnectionStringBuilder conn = new SqlConnectionStringBuilder();
-					SqlConnection connect = new SqlConnection(conn.ConnectionString);
-					connect.Open();
-					SqlDataAdapter da = new SqlDataAdapter();
-					SqlCommand samplecommand = new SqlCommand(updateQry, connect);
-					da.SelectCommand = samplecommand;
-					DataSet ds = new DataSet();
-					da.Fill(ds);
-					var cart_in_json_id_up = JsonConvert.SerializeObject(ds);
+                try
+                {
+                    var cartId = _context.cart.SingleOrDefault(p => p.ID == id);
 
-					if (!ModelState.IsValid)
-					{
-						return StatusCode(StatusCodes.Status400BadRequest);
-					}
-					return Content(cart_in_json_id_up);
-				}
-				catch
-				{
-					return StatusCode(StatusCodes.Status500InternalServerError);
-				}
-			}
-			else
-				return StatusCode(StatusCodes.Status403Forbidden);
-
+                    if (cartId == null)
+                    {
+                        return StatusCode(StatusCodes.Status404NotFound);
+                    }
+                    else
+                    {
+                        Cart cartput = new Cart()
+                        {
+                            ID = cartId.ID,
+                            CustomerID = cartId.CustomerID,
+                            Products = cartId.Products,
+                            Status = status,
+                            Discription = cartId.Discription,
+                            UpdateDate = cartId.UpdateDate
+                        };
+						_context.cart.Add(cartput);
+						_context.SaveChanges();
+                        return Ok(cartput);
+                    }
+                }
+                catch
+                {
+                    return StatusCode(StatusCodes.Status500InternalServerError);
+                }
 		}
 
 
@@ -593,8 +547,6 @@ namespace MyOnlineShop.Controllers
 		[Route("admin/stats")]
 		public ActionResult<IEnumerable<statsModel>> sellerstate(Guid sellerId, statsReqModel s, [FromQuery] int page, [FromQuery] int statsPerPage)
 		{
-			if (User.IsInRole("Admin"))
-			{
 				try
 				{
 					var stats = new statsModel
@@ -624,15 +576,7 @@ namespace MyOnlineShop.Controllers
 				{
 					return StatusCode(StatusCodes.Status500InternalServerError);
 				}
-			}
-			else
-				return StatusCode(StatusCodes.Status403Forbidden);
-
-
-
 		}
-
-
 	}
 }
 
