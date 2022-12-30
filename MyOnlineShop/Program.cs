@@ -11,23 +11,21 @@ builder.Services.AddControllersWithViews();
 
 #region Db Context
 
-builder.Services.AddDbContext<MyShopContext>(options =>
-{
-	//options.UseSqlServer("Data Source =DESKTOP-TU89R0L\\EFI;Initial Catalog=SevenShop_DB;Integrated Security=true;Trust Server Certificate=true;");
-	options.UseSqlServer("Data Source=localhost,1433; Database=shopdatabase5; User Id=sa; Password=someThingComplicated1234; Trust Server Certificate=true;");
+builder.Services.AddDbContext<MyShopContext>(options => {
+    //options.UseSqlServer("Data Source =DESKTOP-TU89R0L\\EFI;Initial Catalog=SevenShop_DB;Integrated Security=true;Trust Server Certificate=true;");
+    options.UseSqlServer("Data Source=localhost,1433; Database=shopdatabase5; User Id=sa; Password=someThingComplicated1234; Trust Server Certificate=true;");
 });
 
 #endregion
 #region Authentication
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-	.AddCookie(options =>
-	{
+    .AddCookie(options => {
 
-		options.LoginPath = "/auth/Login";
-		options.LogoutPath = "/auth/Logout";
-		options.ExpireTimeSpan = TimeSpan.FromDays(4);
-	})
+        options.LoginPath = "/auth/Login";
+        options.LogoutPath = "/auth/Logout";
+        options.ExpireTimeSpan = TimeSpan.FromDays(4);
+    })
   ;
 
 
@@ -39,18 +37,18 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
-	app.UseSwagger();
-	app.UseSwaggerUI();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 //Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-	app.UseExceptionHandler("/Home/Error");
-	// The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-	app.UseHsts();
+    app.UseExceptionHandler("/Home/Error");
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
 }
-
+app.UseAuthentication();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 //app.Use(async (context, next) => { await next();
@@ -61,7 +59,7 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.MapControllerRoute(
-	name: "default",
-	pattern: "{controller=Home}/{action=Index}/{id?}");
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
