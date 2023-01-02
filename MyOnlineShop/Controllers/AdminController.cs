@@ -7,10 +7,10 @@ using System.Data;
 using Microsoft.AspNetCore.Authorization;
 using MyOnlineShop.Data;
 using System.Web.Http.Filters;
+using System.Security.Claims;
 
 namespace MyOnlineShop.Controllers
 {
-	[Authorize(Roles = "admin,Admin,Administrator")]
 	public class AdminController : ControllerBase
 	{
 		private readonly MyShopContext _context;
@@ -25,32 +25,47 @@ namespace MyOnlineShop.Controllers
 		[Route("admin/users")]
 		public ActionResult<IEnumerable<usersModel>> userssget([FromQuery] int page, [FromQuery] int usersPerPage)
 		{
-
-			var users = new usersModel
+			try
 			{
-				page = page,
-				usersPerPage = usersPerPage,
-				users = _context.users
-					.Skip((page - 1) * usersPerPage)
-					.Take(usersPerPage)
-					.Select(u => new userModel
+				string accessLevel = User.FindFirstValue(ClaimTypes.Role).ToLower();
+				if (accessLevel == "admin")
+				{
+					var users = new usersModel
 					{
-						id = u.ID,
-						username = u.UserName,
-						firstName = u.FirstName,
-						lastName = u.LastName,
-						phoneNumber = u.PhoneNumber,
-						email = u.Email,
-						profileImage = u.ImageUrl,
-						birthDate = u.BirthDate,
-						accessLevel = u.AccessLevel,
-						restricted = u.Restricted
-					})
-					.ToList()
-			};
+						page = page,
+						usersPerPage = usersPerPage,
+						users = _context.users
+							.Skip((page - 1) * usersPerPage)
+							.Take(usersPerPage)
+							.Select(u => new userModel
+							{
+								id = u.ID,
+								username = u.UserName,
+								firstName = u.FirstName,
+								lastName = u.LastName,
+								phoneNumber = u.PhoneNumber,
+								email = u.Email,
+								profileImage = u.ImageUrl,
+								birthDate = u.BirthDate,
+								accessLevel = u.AccessLevel,
+								isApproved = u.IsApproved,
+								restricted = u.Restricted
+							})
+							.ToList()
+					};
 
-			return Ok(users);
-		}
+					return Ok(users);
+				}
+				else
+				{
+					return StatusCode(StatusCodes.Status403Forbidden);
+				}
+			}
+			catch
+			{
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
 
 		//------------------------------------
 
@@ -58,8 +73,9 @@ namespace MyOnlineShop.Controllers
 		[Route("admin/users/{id}")]
 		public ActionResult eachuserget(Guid id)
 		{
-
-				try
+			try { 
+				string accessLevel = User.FindFirstValue(ClaimTypes.Role).ToLower();
+				if (accessLevel == "admin")
 				{
 					var userId = _context.users.SingleOrDefault(p => p.ID == id);
 					var user = new userModel
@@ -73,14 +89,20 @@ namespace MyOnlineShop.Controllers
 						profileImage = userId.ImageUrl,
 						birthDate = userId.BirthDate,
 						accessLevel = userId.AccessLevel,
+						isApproved = userId.IsApproved,
 						restricted = userId.Restricted
 					};
 					return Ok(user);
-                }
-				catch
-				{
-					return StatusCode(StatusCodes.Status500InternalServerError);
 				}
+                else
+                {
+                    return StatusCode(StatusCodes.Status403Forbidden);
+                }
+            }
+			catch
+			{
+				return StatusCode(StatusCodes.Status500InternalServerError);
+			}
 		}
 
 
@@ -89,43 +111,37 @@ namespace MyOnlineShop.Controllers
 		[Route("admin/users/{id}")]
 		public ActionResult userput(Guid id, [FromBody] userreqModel req)
 		{
-
             try
             {
-                User userput = new User();
-                var userId = _context.users.SingleOrDefault(p => p.ID == id);
+                string accessLevel = User.FindFirstValue(ClaimTypes.Role).ToLower();
+				if (accessLevel == "admin")
+				{
+					//User userput = new User();
+					var userId = _context.users.SingleOrDefault(p => p.ID == id);
 
-                if (userId == null)
-                {
-                    return StatusCode(StatusCodes.Status404NotFound);
-                }
-                else
-                {
-                    userput = new User()
-                    {
-                        ID = userId.ID,
-						UserName = userId.UserName,
-                        FirstName = userId.FirstName,
-                        LastName = userId.LastName,
-                        ImageUrl = userId.ImageUrl,
-                        Password = userId.Password,
-						BirthDate = userId.BirthDate,
-						customers = userId.customers,
-						sellers = userId.sellers,
-						PhoneNumber = req.phoneNumber,
-						Email = req.email,
-						AccessLevel = req.accessLevel,
-						Restricted = req.restricted
-                    };
-                    _context.users.Add(userput);
-                    _context.SaveChanges();
-                    return Ok(userput);
-                }
+					if (userId == null)
+					{
+						return StatusCode(StatusCodes.Status404NotFound);
+					}
+					else
+					{
+						userId.PhoneNumber = req.phoneNumber;
+						userId.Email = req.email;
+						userId.AccessLevel = req.accessLevel;
+						userId.Restricted = req.restricted;
+						_context.SaveChanges();
+						return Ok(userId);
+					}
 
-                if (!ModelState.IsValid)
-                {
-                    return StatusCode(StatusCodes.Status400BadRequest);
-                }
+					if (!ModelState.IsValid)
+					{
+						return StatusCode(StatusCodes.Status400BadRequest);
+					}
+				}
+				else
+				{
+					return StatusCode(StatusCodes.Status403Forbidden);
+				}
             }
             catch
             {
@@ -142,34 +158,26 @@ namespace MyOnlineShop.Controllers
 		{
 				try
 				{
-					User userput = new User();
-					var userId = _context.users.SingleOrDefault(p => p.ID == id);
-					bool restricted = true;
-					if (userId == null)
+					string accessLevel = User.FindFirstValue(ClaimTypes.Role).ToLower();
+					if (accessLevel == "admin")
 					{
-						return StatusCode(StatusCodes.Status404NotFound);
+						//User userDelete = new User();
+						var userId = _context.users.SingleOrDefault(p => p.ID == id);
+						bool restricted = true;
+						if (userId == null)
+						{
+							return StatusCode(StatusCodes.Status404NotFound);
+						}
+						else
+						{
+							userId.Restricted = restricted;
+							_context.SaveChanges();
+							return Ok(userId);
+						}
 					}
 					else
 					{
-						userput = new User()
-						{
-							ID = userId.ID,
-							UserName = userId.UserName,
-							FirstName = userId.FirstName,
-							LastName = userId.LastName,
-							ImageUrl = userId.ImageUrl,
-							Password = userId.Password,
-							BirthDate = userId.BirthDate,
-							customers = userId.customers,
-							sellers = userId.sellers,
-							PhoneNumber = userId.PhoneNumber,
-							Email = userId.Email,
-							AccessLevel = userId.AccessLevel,
-							Restricted = restricted
-						};
-						_context.users.Add(userput);
-						_context.SaveChanges();
-						return Ok(userput);
+						return StatusCode(StatusCodes.Status403Forbidden);
 					}
 				}
 				catch
@@ -186,52 +194,60 @@ namespace MyOnlineShop.Controllers
 		{
 				try
 				{
-					var tokens = new tokensModel();
-					if (expired)
+					string accessLevel = User.FindFirstValue(ClaimTypes.Role).ToLower();
+					if (accessLevel == "admin")
 					{
-						tokens = new tokensModel
+						var tokens = new tokensModel();
+						if (expired)
 						{
-							page = page,
-							tokensPerPage = tokensPerPage,
-							tokens = _context.tokens.Where(d => d.ExpirationDate < DateTime.Now && d.IsEvent == isEvent)
-													.Skip((page - 1) * tokensPerPage)
-													.Take(tokensPerPage)
-													.Select(u => new DiscountToken
-													{
-														Id = u.Id,
-														ExpirationDate = u.ExpirationDate,
-														Discount = u.Discount,
-														IsEvent = u.IsEvent
-													}).ToList()
+							tokens = new tokensModel
+							{
+								page = page,
+								tokensPerPage = tokensPerPage,
+								tokens = _context.tokens.Where(d => d.ExpirationDate < DateTime.Now && d.IsEvent == isEvent)
+														.Skip((page - 1) * tokensPerPage)
+														.Take(tokensPerPage)
+														.Select(u => new DiscountToken
+														{
+															Id = u.Id,
+															ExpirationDate = u.ExpirationDate,
+															Discount = u.Discount,
+															IsEvent = u.IsEvent
+														}).ToList()
 
-						};
-						if (tokens.tokens.Count == 0)
-							return StatusCode(StatusCodes.Status400BadRequest);
+							};
+							if (tokens.tokens.Count == 0)
+								return StatusCode(StatusCodes.Status400BadRequest);
 
-						return Ok(tokens);
+							return Ok(tokens);
+						}
+						else
+						{
+							tokens = new tokensModel
+							{
+								page = page,
+								tokensPerPage = tokensPerPage,
+								tokens = _context.tokens.Where(d => d.ExpirationDate >= DateTime.Now && d.IsEvent == isEvent)
+														.Skip((page - 1) * tokensPerPage)
+														.Take(tokensPerPage)
+														.Select(u => new DiscountToken
+														{
+															Id = u.Id,
+															ExpirationDate = u.ExpirationDate,
+															Discount = u.Discount,
+															IsEvent = u.IsEvent
+														}).ToList()
+
+							};
+							if (tokens.tokens.Count == 0)
+								return StatusCode(StatusCodes.Status400BadRequest);
+
+							return Ok(tokens);
+						}
 					}
 					else
 					{
-						tokens = new tokensModel
-						{
-							page = page,
-							tokensPerPage = tokensPerPage,
-							tokens = _context.tokens.Where(d => d.ExpirationDate >= DateTime.Now && d.IsEvent == isEvent)
-													.Skip((page - 1) * tokensPerPage)
-													.Take(tokensPerPage)
-													.Select(u => new DiscountToken
-													{
-														Id = u.Id,
-														ExpirationDate = u.ExpirationDate,
-														Discount = u.Discount,
-														IsEvent = u.IsEvent
-													}).ToList()
-
-						};
-						if (tokens.tokens.Count == 0)
-							return StatusCode(StatusCodes.Status400BadRequest);
-
-						return Ok(tokens);
+						return StatusCode(StatusCodes.Status403Forbidden);
 					}
 				}
 				catch
@@ -248,22 +264,30 @@ namespace MyOnlineShop.Controllers
 		{
 				try
 				{
-					DiscountToken tokenput = new DiscountToken()
+					string accessLevel = User.FindFirstValue(ClaimTypes.Role).ToLower();
+					if (accessLevel == "admin")
 					{
-						ExpirationDate = tokenputter.ExpirationDate,
-						Discount = tokenputter.Discount,
-						IsEvent = tokenputter.IsEvent
-					};
+						DiscountToken tokenput = new DiscountToken()
+						{
+							ExpirationDate = tokenputter.ExpirationDate,
+							Discount = tokenputter.Discount,
+							IsEvent = tokenputter.IsEvent
+						};
 
-                        
-                    _context.tokens.Add(tokenput);
-                    _context.SaveChanges();
-                    return Ok(tokenput);
 
-                    if (!ModelState.IsValid)
-                    {
-                        return StatusCode(StatusCodes.Status400BadRequest);
-                    }
+						_context.tokens.Add(tokenput);
+						_context.SaveChanges();
+						return Ok(tokenput);
+
+						if (!ModelState.IsValid)
+						{
+							return StatusCode(StatusCodes.Status400BadRequest);
+						}
+					}
+					else
+					{
+						return StatusCode(StatusCodes.Status403Forbidden);
+					}
                 }
 				catch
 				{
@@ -280,18 +304,26 @@ namespace MyOnlineShop.Controllers
 		{
 				try
 				{
-					var delToken = _context.tokens.SingleOrDefault(p => p.Id == id);
-					if(delToken == null)
+					string accessLevel = User.FindFirstValue(ClaimTypes.Role).ToLower();
+					if (accessLevel == "admin")
 					{
-						return StatusCode(StatusCodes.Status404NotFound);
+						var delToken = _context.tokens.SingleOrDefault(p => p.Id == id);
+						if (delToken == null)
+						{
+							return StatusCode(StatusCodes.Status404NotFound);
+						}
+						else
+						{
+							_context.tokens.Remove(delToken);
+							_context.SaveChanges();
+
+						}
+						return Ok();
 					}
 					else
 					{
-						_context.tokens.Remove(delToken);
-						_context.SaveChanges();
-						
+						return StatusCode(StatusCodes.Status403Forbidden);
 					}
-                    return Ok();
                 }
                 catch
 				{
@@ -305,158 +337,165 @@ namespace MyOnlineShop.Controllers
 		{
 			try
 			{
-				var carts = new cartModel();
-				if (current.HasValue)
+                string accessLevel = User.FindFirstValue(ClaimTypes.Role).ToLower();
+				if (accessLevel == "admin")
 				{
-					if (current.Value == true)
+					var carts = new cartModel();
+					if (current.HasValue)
 					{
-						//current = True => status = Approved
-						if (userId.HasValue)
+						if (current.Value == true)
 						{
-							carts = new cartModel
+							//current = True => status = Approved
+							if (userId.HasValue)
 							{
-								page = page,
-								cartsPerPage = cartsPerPage,
-								carts = _context.cart.Where(d => d.Status == "Approved" && d.ID == userId)
-								.Skip((page - 1) * cartsPerPage).Take(cartsPerPage).Select(u => new eachCart
+								carts = new cartModel
 								{
-									id = u.ID,
-									customerId = u.CustomerID,
-									products = _context.productPrices.Where(f => f.SellerID == userId).Select(l => new eachproduct
+									page = page,
+									cartsPerPage = cartsPerPage,
+									carts = _context.cart.Where(d => d.Status == "Approved" && d.ID == userId)
+									.Skip((page - 1) * cartsPerPage).Take(cartsPerPage).Select(u => new eachCart
 									{
-										productId = l.ProductID,
-										amount = l.Amount
-									}).ToList(),
-									status = u.Status,
-									description = u.Discription,
-									updateDate = u.UpdateDate
-								}).ToList()
-							};
-						}
-						else
-						{
-							carts = new cartModel
+										id = u.ID,
+										customerId = u.CustomerID,
+										products = _context.productPrices.Where(f => f.SellerID == userId).Select(l => new eachproduct
+										{
+											productId = l.ProductID,
+											amount = l.Amount
+										}).ToList(),
+										status = u.Status,
+										description = u.Discription,
+										updateDate = u.UpdateDate
+									}).ToList()
+								};
+							}
+							else
 							{
-								page = page,
-								cartsPerPage = cartsPerPage,
-								carts = _context.cart.Where(d => d.Status == "Approved")
-								.Skip((page - 1) * cartsPerPage).Take(cartsPerPage).Select(u => new eachCart
+								carts = new cartModel
 								{
-									id = u.ID,
-									customerId = u.CustomerID,
-									products = _context.productPrices.Where(f => f.SellerID == userId).Select(l => new eachproduct
+									page = page,
+									cartsPerPage = cartsPerPage,
+									carts = _context.cart.Where(d => d.Status == "Approved")
+									.Skip((page - 1) * cartsPerPage).Take(cartsPerPage).Select(u => new eachCart
 									{
-										productId = l.ProductID,
-										amount = l.Amount
-									}).ToList(),
-									status = u.Status,
-									description = u.Discription,
-									updateDate = u.UpdateDate
-								}).ToList()
-							};
+										id = u.ID,
+										customerId = u.CustomerID,
+										products = _context.productPrices.Where(f => f.SellerID == userId).Select(l => new eachproduct
+										{
+											productId = l.ProductID,
+											amount = l.Amount
+										}).ToList(),
+										status = u.Status,
+										description = u.Discription,
+										updateDate = u.UpdateDate
+									}).ToList()
+								};
 
+							}
 						}
-					}
-					else if (current.Value == false)
-					{
-						//current = fasle => status = Rejected
-						if (userId.HasValue)
+						else if (current.Value == false)
 						{
-							carts = new cartModel
+							//current = fasle => status = Rejected
+							if (userId.HasValue)
 							{
-								page = page,
-								cartsPerPage = cartsPerPage,
-								carts = _context.cart.Where(d => d.Status == "Rejected" && d.ID == userId)
-								.Skip((page - 1) * cartsPerPage).Take(cartsPerPage).Select(u => new eachCart
+								carts = new cartModel
 								{
-									id = u.ID,
-									customerId = u.CustomerID,
-									products = _context.productPrices.Where(f => f.SellerID == userId).Select(l => new eachproduct
+									page = page,
+									cartsPerPage = cartsPerPage,
+									carts = _context.cart.Where(d => d.Status == "Rejected" && d.ID == userId)
+									.Skip((page - 1) * cartsPerPage).Take(cartsPerPage).Select(u => new eachCart
 									{
-										productId = l.ProductID,
-										amount = l.Amount
-									}).ToList(),
-									status = u.Status,
-									description = u.Discription,
-									updateDate = u.UpdateDate
-								}).ToList()
-							};
-						}
-						else
-						{
-							carts = new cartModel
+										id = u.ID,
+										customerId = u.CustomerID,
+										products = _context.productPrices.Where(f => f.SellerID == userId).Select(l => new eachproduct
+										{
+											productId = l.ProductID,
+											amount = l.Amount
+										}).ToList(),
+										status = u.Status,
+										description = u.Discription,
+										updateDate = u.UpdateDate
+									}).ToList()
+								};
+							}
+							else
 							{
-								page = page,
-								cartsPerPage = cartsPerPage,
-								carts = _context.cart.Where(d => d.Status == "Rejected")
-								.Skip((page - 1) * cartsPerPage).Take(cartsPerPage).Select(u => new eachCart
+								carts = new cartModel
 								{
-									id = u.ID,
-									customerId = u.CustomerID,
-									products = _context.productPrices.Where(f => f.SellerID == userId).Select(l => new eachproduct
+									page = page,
+									cartsPerPage = cartsPerPage,
+									carts = _context.cart.Where(d => d.Status == "Rejected")
+									.Skip((page - 1) * cartsPerPage).Take(cartsPerPage).Select(u => new eachCart
 									{
-										productId = l.ProductID,
-										amount = l.Amount
-									}).ToList(),
-									status = u.Status,
-									description = u.Discription,
-									updateDate = u.UpdateDate
-								}).ToList()
-							};
+										id = u.ID,
+										customerId = u.CustomerID,
+										products = _context.productPrices.Where(f => f.SellerID == userId).Select(l => new eachproduct
+										{
+											productId = l.ProductID,
+											amount = l.Amount
+										}).ToList(),
+										status = u.Status,
+										description = u.Discription,
+										updateDate = u.UpdateDate
+									}).ToList()
+								};
 
+							}
 						}
-					}
-				}
-				else
-				{
-					if (userId.HasValue)
-					{
-						carts = new cartModel
-						{
-							page = page,
-							cartsPerPage = cartsPerPage,
-							carts = _context.cart.Where(d => d.ID == userId)
-							.Skip((page - 1) * cartsPerPage).Take(cartsPerPage).Select(u => new eachCart
-							{
-								id = u.ID,
-								customerId = u.CustomerID,
-								products = _context.productPrices.Where(f => f.SellerID == userId).Select(l => new eachproduct
-								{
-									productId = l.ProductID,
-									amount = l.Amount
-								}).ToList(),
-								status = u.Status,
-								description = u.Discription,
-								updateDate = u.UpdateDate
-							}).ToList()
-						};
 					}
 					else
 					{
-						carts = new cartModel
+						if (userId.HasValue)
 						{
-							page = page,
-							cartsPerPage = cartsPerPage,
-							carts = _context.cart
-							.Skip((page - 1) * cartsPerPage).Take(cartsPerPage).Select(u => new eachCart
+							carts = new cartModel
 							{
-								id = u.ID,
-								customerId = u.CustomerID,
-								products = _context.productPrices.Where(f => f.SellerID == userId).Select(l => new eachproduct
+								page = page,
+								cartsPerPage = cartsPerPage,
+								carts = _context.cart.Where(d => d.ID == userId)
+								.Skip((page - 1) * cartsPerPage).Take(cartsPerPage).Select(u => new eachCart
 								{
-									productId = l.ProductID,
-									amount = l.Amount
-								}).ToList(),
-								status = u.Status,
-								description = u.Discription,
-								updateDate = u.UpdateDate
-							}).ToList()
-						};
+									id = u.ID,
+									customerId = u.CustomerID,
+									products = _context.productPrices.Where(f => f.SellerID == userId).Select(l => new eachproduct
+									{
+										productId = l.ProductID,
+										amount = l.Amount
+									}).ToList(),
+									status = u.Status,
+									description = u.Discription,
+									updateDate = u.UpdateDate
+								}).ToList()
+							};
+						}
+						else
+						{
+							carts = new cartModel
+							{
+								page = page,
+								cartsPerPage = cartsPerPage,
+								carts = _context.cart
+								.Skip((page - 1) * cartsPerPage).Take(cartsPerPage).Select(u => new eachCart
+								{
+									id = u.ID,
+									customerId = u.CustomerID,
+									products = _context.productPrices.Where(f => f.SellerID == userId).Select(l => new eachproduct
+									{
+										productId = l.ProductID,
+										amount = l.Amount
+									}).ToList(),
+									status = u.Status,
+									description = u.Discription,
+									updateDate = u.UpdateDate
+								}).ToList()
+							};
 
+						}
 					}
+					return Ok(carts);
 				}
-				return Ok(carts);
-
+				else
+				{
+					return StatusCode(StatusCodes.Status403Forbidden);
+				}
 			}
 			catch
 			{
@@ -473,28 +512,36 @@ namespace MyOnlineShop.Controllers
 		{
 				try
 				{
-					var cartId = _context.cart.SingleOrDefault(p => p.ID == id);
-
-					if (cartId == null)
+					string accessLevel = User.FindFirstValue(ClaimTypes.Role).ToLower();
+					if (accessLevel == "admin")
 					{
-						return StatusCode(StatusCodes.Status404NotFound);
+						var cartId = _context.cart.SingleOrDefault(p => p.ID == id);
+
+						if (cartId == null)
+						{
+							return StatusCode(StatusCodes.Status404NotFound);
+						}
+						else
+						{
+							eachCart cart = new eachCart()
+							{
+								id = cartId.ID,
+								customerId = cartId.CustomerID,
+								products = _context.productPrices.Where(f => f.SellerID == id).Select(l => new eachproduct
+								{
+									productId = l.ProductID,
+									amount = l.Amount
+								}).ToList(),
+								status = cartId.Status,
+								description = cartId.Discription,
+								updateDate = cartId.UpdateDate
+							};
+							return Ok(cart);
+						}
 					}
 					else
 					{
-						eachCart cart = new eachCart()
-						{
-							id = cartId.ID,
-							customerId = cartId.CustomerID,
-                            products = _context.productPrices.Where(f => f.SellerID == id).Select(l => new eachproduct
-                            {
-                                productId = l.ProductID,
-                                amount = l.Amount
-                            }).ToList(),
-							status = cartId.Status,
-							description = cartId.Discription,
-							updateDate = cartId.UpdateDate
-                        };
-						return Ok(cart);
+						return StatusCode(StatusCodes.Status403Forbidden);
 					}
 				}
 				catch
@@ -513,27 +560,26 @@ namespace MyOnlineShop.Controllers
 		{
                 try
                 {
-                    var cartId = _context.cart.SingleOrDefault(p => p.ID == id);
+					string accessLevel = User.FindFirstValue(ClaimTypes.Role).ToLower();
+					if (accessLevel == "admin")
+					{
+						var cartId = _context.cart.SingleOrDefault(p => p.ID == id);
 
-                    if (cartId == null)
-                    {
-                        return StatusCode(StatusCodes.Status404NotFound);
-                    }
-                    else
-                    {
-                        Cart cartput = new Cart()
-                        {
-                            ID = cartId.ID,
-                            CustomerID = cartId.CustomerID,
-                            Products = cartId.Products,
-                            Status = status,
-                            Discription = cartId.Discription,
-                            UpdateDate = cartId.UpdateDate
-                        };
-						_context.cart.Add(cartput);
-						_context.SaveChanges();
-                        return Ok(cartput);
-                    }
+						if (cartId == null)
+						{
+							return StatusCode(StatusCodes.Status404NotFound);
+						}
+						else
+						{
+							cartId.Status = status;
+							_context.SaveChanges();
+							return Ok(cartId);
+						}
+					}
+					else
+					{
+						return StatusCode(StatusCodes.Status403Forbidden);
+					}
                 }
                 catch
                 {
@@ -549,28 +595,36 @@ namespace MyOnlineShop.Controllers
 		{
 				try
 				{
-					var stats = new statsModel
+					string accessLevel = User.FindFirstValue(ClaimTypes.Role).ToLower();
+					if (accessLevel == "admin")
 					{
-						page = page,
-						allstatsPerPage = statsPerPage,
-						stats = _context.stats.Where(d => d.productId == s.productId && d.sellerId == sellerId && d.date >= s.datefrom && d.date <= s.dateto)
-						.Skip((page - 1) * statsPerPage)
-						.Take(statsPerPage)
-						.Select(u => new statModel
+						var stats = new statsModel
 						{
-							id = u.Id,
-							productId = u.productId,
-							sellerId = u.sellerId,
-							date = u.date,
-							amount = u.amount,
-							price = u.price
-						}).ToList()
+							page = page,
+							allstatsPerPage = statsPerPage,
+							stats = _context.stats.Where(d => d.productId == s.productId && d.sellerId == sellerId && d.date >= s.datefrom && d.date <= s.dateto)
+							.Skip((page - 1) * statsPerPage)
+							.Take(statsPerPage)
+							.Select(u => new statModel
+							{
+								id = u.Id,
+								productId = u.productId,
+								sellerId = u.sellerId,
+								date = u.date,
+								amount = u.amount,
+								price = u.price
+							}).ToList()
 
-					};
-					if (stats.stats.Count == 0)
-						return StatusCode(StatusCodes.Status400BadRequest);
+						};
+						if (stats.stats.Count == 0)
+							return StatusCode(StatusCodes.Status400BadRequest);
 
-					return Ok(stats);
+						return Ok(stats);
+					}
+					else
+					{
+						return StatusCode(StatusCodes.Status403Forbidden);
+					}
 				}
 				catch
 				{

@@ -6,6 +6,10 @@ using Microsoft.AspNetCore.Authorization;
 using MyOnlineShop.Models.apimodel;
 using System.Security.Claims;
 using MyOnlineShop.Models;
+using System.Net;
+using System.Configuration;
+using System.Diagnostics;
+using Microsoft.AspNetCore.Identity;
 
 namespace MyOnlineShop.Controllers
 {
@@ -19,41 +23,40 @@ namespace MyOnlineShop.Controllers
 
 		}
 
-		[HttpPost]
-		[Route("auth/login")]
-		public IActionResult loginmethod([FromBody] LoginModel loginModel)
-		{
-			if (!ModelState.IsValid)
-			{
-				return BadRequest(ModelState);
-			}
-			var user = _context.users.FirstOrDefault(u => u.UserName == loginModel.username && u.Password == loginModel.password);
-			if (user == null)
-			{
-				return NotFound();
-			}
-			else
-			{
-				var claims = new List<Claim>
-			{
-				new Claim(ClaimTypes.NameIdentifier, user.ID.ToString()),
-				new Claim(ClaimTypes.Name, user.UserName),
+        [HttpPost]
+        [Route("auth/login")]
+        public IActionResult loginmethod([FromBody] LoginModel loginModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var user = _context.users.FirstOrDefault(u => u.UserName == loginModel.username && u.Password == loginModel.password);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            else
+            {
+                var claims = new[]
+                {
+                    new Claim(ClaimTypes.Name, user.UserName),
+                    new Claim(ClaimTypes.Role, user.AccessLevel)
+                };
 
-				new Claim(ClaimTypes.Role, user.AccessLevel)
-			};
-				var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                var identity = new ClaimsIdentity(claims,
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                ClaimTypes.Name,
+                ClaimTypes.Role);
+                var principal = new ClaimsPrincipal(identity);
+                HttpContext.SignInAsync(principal);
 
-				var principal = new ClaimsPrincipal(identity);
+                var status = new Dictionary<string, string>() { { "status", "success" } };
+                return Ok(status);
+            }
+        }
 
-
-				HttpContext.SignInAsync(principal);
-
-				var status = new Dictionary<string, string>() { { "status", "success" } };
-				return Ok(status);
-			}
-		}
-
-		[HttpPost]
+        [HttpPost]
 		[Route("auth/register")]
 		public ActionResult registermethod([FromBody] RegisterModel registerModel)
 		{
@@ -71,10 +74,11 @@ namespace MyOnlineShop.Controllers
 				{
 					ModelState.AddModelError("UserName", "This UserName Has been registered Already");
 				    status = new Dictionary<string, string>() { { "status", "Exists" } };
-				}/*else if(email != null)
+				}else if(email != null)
 				{
-				 ModelState.AddModelError("Email", "This Email Has been registered Already");
-				}*/
+					ModelState.AddModelError("Email", "This Email Has been registered Already");
+                    status = new Dictionary<string, string>() { { "status", "Exists" } };
+                }
 				else
 				{
 					User user1 = new User()
@@ -93,6 +97,7 @@ namespace MyOnlineShop.Controllers
 					};
 					_context.users.Add(user1);
 					_context.SaveChanges();
+					verificationCodeIn(user1.UserName);
 					if(user1 == null)
 					{
 					 status = new Dictionary<string, string>() { { "status", "Failed" } };
@@ -106,19 +111,57 @@ namespace MyOnlineShop.Controllers
 				return StatusCode(StatusCodes.Status500InternalServerError);
 			}
 		}
-		[HttpGet]
-		[Route("auth/verify")]
-		public IActionResult verify(int VerficationCode)
+		public void verificationCodeIn(string name)
 		{
 
+			var GuidKey = Guid.NewGuid();
 
-
-			var status = new Dictionary<string, string>() { { "status", "success" } };
-			return Ok(status);
-
+			Verification VerGen = new Verification()
+			{
+				ID = GuidKey,
+				UserName = name,
+				ValidTime = DateTime.Now.AddMinutes(10)
+			};
+            _context.verification.Add(VerGen);
+            _context.SaveChanges();
 		}
 
+		[HttpGet]
+		[Route("auth/verify")]
+		public ActionResult<IEnumerable<userModel>> verify(Guid VerificationCode)
+		{
+			try
+			{
+				var status = new Dictionary<string, string>();
+				User UserApprove = new User();
+				var VerKey = _context.verification.SingleOrDefault(p => p.ID == VerificationCode);
+				if (VerKey != null)
+				{
+					if (VerKey.ValidTime >= DateTime.Now)
+					{
 
+						var userId = _context.users.SingleOrDefault(l => l.UserName == VerKey.UserName);
+						userId.IsApproved = true;
+						_context.SaveChanges();
+						status = new Dictionary<string, string>() { { "status", "Success" } };
+					}
+					else
+					{
+						status = new Dictionary<string, string>() { { "status", "Expired" } };
+					}
+				}
+				else
+				{
+					ModelState.AddModelError("Invalid", "This Verification Code Not Valid");
+					status = new Dictionary<string, string>() { { "status", "Invalid" } };
+				}
+				return Ok(status);
+			}
+            catch
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
 	}
 }
 
