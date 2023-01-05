@@ -6,7 +6,7 @@ namespace MyOnlineShop.Models
 	public class Customer
 	{
 		[Key]
-		public int ID { get; set; }
+		public Guid ID { get; set; }
 		public Guid UserId { get; set; }
 		[Required]
 
@@ -16,7 +16,7 @@ namespace MyOnlineShop.Models
 		public double Balance { get; set; }
 
 
-		[ForeignKey("CartId")]
+		[ForeignKey("CartId")]					
 		public Cart cart { get; set; }
 
 

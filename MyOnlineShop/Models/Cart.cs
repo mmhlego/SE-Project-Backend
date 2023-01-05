@@ -12,8 +12,7 @@ namespace MyOnlineShop.Models
         public string Status { get; set; }
         public double TotalPrice { get; set; }
         [Required]
-        public string Discription { get; set; }
-
+        public string Description { get; set; }
         [Required]
         public DateTime UpdateDate { get; set; }
         public List<Order> orders { get; set; }
