@@ -7,7 +7,6 @@
 	}
 	public class RegisterModel
 	{
-		public Guid id { get; set; }
 		public string type { get; set; }
 		public string username { get; set; }
 		public string password { get; set; }
@@ -16,7 +15,5 @@
 		public string phoneNumber { get; set; }
 		public string email { get; set; }
 		public DateTime birthDate { get; set; }
-		// image Url Handler Created By Karimi
-		public string imageurl { get; set; }
 	}
 }

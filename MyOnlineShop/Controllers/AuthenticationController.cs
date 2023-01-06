@@ -29,7 +29,11 @@ namespace MyOnlineShop.Controllers
 			var user = _context.users.FirstOrDefault(u => u.UserName == loginModel.username && u.Password == loginModel.password);
 			if (user == null)
 			{
-				return NotFound();
+				return Ok(new Dictionary<string, string>() { { "status", "Failed" } });
+			}
+			else if (user.Restricted)
+			{
+				return Ok(new Dictionary<string, string>() { { "status", "Restricted" } });
 			}
 			else
 			{
@@ -46,8 +50,7 @@ namespace MyOnlineShop.Controllers
 				var principal = new ClaimsPrincipal(identity);
 				HttpContext.SignInAsync(principal);
 
-				var status = new Dictionary<string, string>() { { "status", "success" } };
-				return Ok(status);
+				return Ok(new Dictionary<string, string>() { { "status", "Success" } });
 			}
 		}
 
@@ -65,6 +68,7 @@ namespace MyOnlineShop.Controllers
 				var status = new Dictionary<string, string>();
 				var username = _context.users.SingleOrDefault(u => u.UserName == registerModel.username);
 				var email = _context.users.SingleOrDefault(u => u.Email == registerModel.email);
+				var phone = _context.users.SingleOrDefault(u => u.PhoneNumber == registerModel.phoneNumber);
 				if (username != null)
 				{
 					ModelState.AddModelError("UserName", "This UserName Has been registered Already");
@@ -75,10 +79,16 @@ namespace MyOnlineShop.Controllers
 					ModelState.AddModelError("Email", "This Email Has been registered Already");
 					status = new Dictionary<string, string>() { { "status", "Exists" } };
 				}
+				else if (phone != null)
+				{
+					ModelState.AddModelError("PhoneNumber", "This PhoneNumber Has been registered Already");
+					status = new Dictionary<string, string>() { { "status", "Exists" } };
+				}
 				else
 				{
 					User user1 = new User()
 					{
+						ID = Guid.NewGuid(),
 						AccessLevel = registerModel.type,
 						UserName = registerModel.username,
 						Password = registerModel.password,
@@ -87,7 +97,7 @@ namespace MyOnlineShop.Controllers
 						PhoneNumber = registerModel.phoneNumber,
 						Email = registerModel.email,
 						BirthDate = registerModel.birthDate,
-						ImageUrl = registerModel.imageurl,
+						ImageUrl = "",
 						IsApproved = false,
 						Restricted = false
 					};
