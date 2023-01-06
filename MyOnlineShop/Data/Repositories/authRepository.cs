@@ -35,15 +35,15 @@ namespace MyOnlineShop.Data.Repositories
 
             
         }
-        public static string SendEmail(string body)
+        public static string SendEmail(string body, string to)
         {
 
             var email = new MimeMessage();
 
             email.From.Add(MailboxAddress.Parse("erfanzadsoltani1@gmail.com"));
 
-            email.To.Add(MailboxAddress.Parse("mahsafaramarzi1381@gmail.com"));
-            email.Subject = "Verification Code From seven shop";
+            email.To.Add(MailboxAddress.Parse(to));
+            email.Subject = "Seven Shop7";
             email.Body = new TextPart(TextFormat.Html) { Text ="code: "+ body };
 
             using var smtp = new SmtpClient();
