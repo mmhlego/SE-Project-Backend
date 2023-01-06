@@ -8,6 +8,8 @@
 
   <ItemGroup>
     <PackageReference Include="FsCheck" Version="2.16.5" />
+    <PackageReference Include="KavenegarDotNetCore" Version="1.0.5" />
+    <PackageReference Include="MailKit" Version="3.4.3" />
     <PackageReference Include="Microsoft.AspNet.Mvc" Version="5.2.9" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.9" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Core" Version="5.2.9" />
@@ -23,6 +25,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.10" />
+    <PackageReference Include="MimeKit" Version="3.4.3" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />

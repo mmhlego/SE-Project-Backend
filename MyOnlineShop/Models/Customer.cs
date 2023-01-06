@@ -6,7 +6,7 @@ namespace MyOnlineShop.Models
 	public class Customer
 	{
 		[Key]
-		public int ID { get; set; }
+		public Guid ID { get; set; }
 		public Guid UserId { get; set; }
 		[Required]
 

@@ -127,7 +127,7 @@ namespace MyOnlineShop.Controllers
 				eachCart eachCart = new eachCart()
 				{
 					customerId = cart.CustomerID,
-					description = cart.Discription,
+					description = cart.Description,
 					id = cart.ID,
 					products = ps,
 					status = "Filling",

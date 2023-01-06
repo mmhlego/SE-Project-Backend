@@ -10,7 +10,7 @@ namespace MyOnlineShop.Models
 		[Required]
 		public string Name { get; set; }
 		[Required]
-		public string Descriptiopn { get; set; }
+		public string Description { get; set; }
 		[Required]
 		public string Image { get; set; }
 		public int likes { get; set; }

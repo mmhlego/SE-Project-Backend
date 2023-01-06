@@ -2,14 +2,9 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using MyOnlineShop.Data;
-using Microsoft.AspNetCore.Authorization;
 using MyOnlineShop.Models.apimodel;
 using System.Security.Claims;
 using MyOnlineShop.Models;
-using System.Net;
-using System.Configuration;
-using System.Diagnostics;
-using Microsoft.AspNetCore.Identity;
 
 namespace MyOnlineShop.Controllers
 {

@@ -79,7 +79,7 @@ namespace MyOnlineShop.Controllers
 					image = eachproduct.Image,
 					name = eachproduct.Name,
 					category = eachproduct.Category,
-					description = eachproduct.Descriptiopn,
+					description = eachproduct.Description,
 					dislikes = eachproduct.dislikes,
 					likes = eachproduct.likes
 				};
@@ -127,7 +127,7 @@ namespace MyOnlineShop.Controllers
 							Category = p1.category,
 							Name = p1.name,
 							Image = p1.image,
-							Descriptiopn = p1.description,
+							Description = p1.description,
 							likes = 0,
 							dislikes = 0
 
@@ -138,7 +138,7 @@ namespace MyOnlineShop.Controllers
 							category = productToAdd.Category,
 							name = productToAdd.Name,
 							image = productToAdd.Image,
-							description = productToAdd.Descriptiopn,
+							description = productToAdd.Description,
 							likes = 0,
 							dislikes = 0
 						};
@@ -183,7 +183,7 @@ namespace MyOnlineShop.Controllers
 				var p1 = new productModel()
 				{
 					category = products.Category,
-					description = products.Descriptiopn,
+					description = products.Description,
 					id = products.ID,
 					dislikes = products.dislikes,
 					likes = products.likes,
@@ -236,7 +236,7 @@ namespace MyOnlineShop.Controllers
 						var p1 = new productModel()
 						{
 							category = products.Category,
-							description = products.Descriptiopn,
+							description = products.Description,
 							id = products.ID,
 							dislikes = products.dislikes,
 							likes = products.likes,
@@ -304,7 +304,7 @@ namespace MyOnlineShop.Controllers
 
 							if (p1.category != null) { product.Category = p1.category; }
 
-							if (p1.description != null) { product.Descriptiopn = p1.description; }
+							if (p1.description != null) { product.Description = p1.description; }
 
 							if (p1.image != null) { product.Image = p1.image; }
 
@@ -382,7 +382,7 @@ namespace MyOnlineShop.Controllers
 					productModel products = new productModel()
 					{
 						category = product.Category,
-						description = product.Descriptiopn,
+						description = product.Description,
 						id = product.ID,
 						dislikes = product.dislikes,
 						likes = product.likes,
