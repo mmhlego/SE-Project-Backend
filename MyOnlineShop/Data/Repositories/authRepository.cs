@@ -9,12 +9,16 @@ namespace MyOnlineShop.Data.Repositories
 	{
 		public static void verificationCode(string phoneNumber, string message)
 		{
+
 			try
 			{
 				Kavenegar.KavenegarApi api = new Kavenegar.KavenegarApi("747A5A544864684F4A4D7035414E6A6A413962702B72556A6A7966534C334149714D496A357141657166593D");
 				var result = api.Send("SenderLine", phoneNumber, message);
 
+
 				Console.Write("resault.Messageid.ToString()");
+
+
 			}
 			catch (Kavenegar.Core.Exceptions.ApiException ex)
 			{
@@ -26,16 +30,18 @@ namespace MyOnlineShop.Data.Repositories
 				// در زمانی که مشکلی در برقرای ارتباط با وب سرویس وجود داشته باشد این خطا رخ می دهد
 				Console.Write("Message : " + ex.Message);
 			}
-		}
 
-		public static string SendEmail(string body)
+
+		}
+		public static string SendEmail(string body, string to)
 		{
+
 			var email = new MimeMessage();
 
 			email.From.Add(MailboxAddress.Parse("erfanzadsoltani1@gmail.com"));
 
-			email.To.Add(MailboxAddress.Parse("mahsafaramarzi1381@gmail.com"));
-			email.Subject = "Verification Code From seven shop";
+			email.To.Add(MailboxAddress.Parse(to));
+			email.Subject = "Seven Shop7";
 			email.Body = new TextPart(TextFormat.Html) { Text = "code: " + body };
 
 			using var smtp = new SmtpClient();

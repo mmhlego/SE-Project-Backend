@@ -112,21 +112,19 @@ namespace MyOnlineShop.Controllers
 		{
 			try
 			{
-                Customer custput = new Customer();
+				Customer custput = new Customer();
 				var CustomerId = _context.customer.SingleOrDefault(p => p.UserId == id);
-				
+
 				if (CustomerId == null)
 				{
 					return StatusCode(StatusCodes.Status404NotFound);
 				}
 				else
 				{
-                    var user = _context.users.SingleOrDefault(f => f.ID == CustomerId.UserId);
-                    custput = new Customer()
+					var user = _context.users.SingleOrDefault(f => f.ID == CustomerId.UserId);
+					custput = new Customer()
 					{
 						UserId = id,
-						CartId = CustomerId.CartId,
-						cart = CustomerId.cart,
 						user = CustomerId.user,
 						Address = custupdate.address,
 						Balance = custupdate.balance

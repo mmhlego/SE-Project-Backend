@@ -126,7 +126,7 @@ namespace MyOnlineShop.Controllers
 			{
 				ID = GuidKey,
 				UserName = name,
-				ValidTime = DateTime.Now.AddMinutes(10)
+				ValidTime = DateTime.Now.AddHours(12)
 			};
 			_context.verification.Add(VerGen);
 			_context.SaveChanges();
