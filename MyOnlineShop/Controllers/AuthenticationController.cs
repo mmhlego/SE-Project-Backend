@@ -18,46 +18,46 @@ namespace MyOnlineShop.Controllers
 
 		}
 
-        [HttpPost]
-        [Route("auth/login")]
-        public IActionResult loginmethod([FromBody] LoginModel loginModel)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            var user = _context.users.FirstOrDefault(u => u.UserName == loginModel.username && u.Password == loginModel.password);
-            if (user == null)
-            {
-                return NotFound();
-            }
-            else
-            {
-                var claims = new[]
-                {
-                    new Claim(ClaimTypes.Name, user.UserName),
-                    new Claim(ClaimTypes.Role, user.AccessLevel)
-                };
+		[HttpPost]
+		[Route("auth/login")]
+		public IActionResult loginmethod([FromBody] LoginModel loginModel)
+		{
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
+			var user = _context.users.FirstOrDefault(u => u.UserName == loginModel.username && u.Password == loginModel.password);
+			if (user == null)
+			{
+				return NotFound();
+			}
+			else
+			{
+				var claims = new[]
+				{
+					new Claim(ClaimTypes.Name, user.UserName),
+					new Claim(ClaimTypes.Role, user.AccessLevel)
+				};
 
-                var identity = new ClaimsIdentity(claims,
-                CookieAuthenticationDefaults.AuthenticationScheme,
-                ClaimTypes.Name,
-                ClaimTypes.Role);
-                var principal = new ClaimsPrincipal(identity);
-                HttpContext.SignInAsync(principal);
+				var identity = new ClaimsIdentity(claims,
+				CookieAuthenticationDefaults.AuthenticationScheme,
+				ClaimTypes.Name,
+				ClaimTypes.Role);
+				var principal = new ClaimsPrincipal(identity);
+				HttpContext.SignInAsync(principal);
 
-                var status = new Dictionary<string, string>() { { "status", "success" } };
-                return Ok(status);
-            }
-        }
+				var status = new Dictionary<string, string>() { { "status", "success" } };
+				return Ok(status);
+			}
+		}
 
-        [HttpPost]
+		[HttpPost]
 		[Route("auth/register")]
 		public ActionResult registermethod([FromBody] RegisterModel registerModel)
 		{
 			try
-			{ 
-				
+			{
+
 				if (!ModelState.IsValid)
 				{
 					return StatusCode(StatusCodes.Status400BadRequest);
@@ -68,18 +68,19 @@ namespace MyOnlineShop.Controllers
 				if (username != null)
 				{
 					ModelState.AddModelError("UserName", "This UserName Has been registered Already");
-				    status = new Dictionary<string, string>() { { "status", "Exists" } };
-				}else if(email != null)
+					status = new Dictionary<string, string>() { { "status", "Exists" } };
+				}
+				else if (email != null)
 				{
 					ModelState.AddModelError("Email", "This Email Has been registered Already");
-                    status = new Dictionary<string, string>() { { "status", "Exists" } };
-                }
+					status = new Dictionary<string, string>() { { "status", "Exists" } };
+				}
 				else
 				{
 					User user1 = new User()
 					{
-					    AccessLevel = registerModel.type,
-					    UserName = registerModel.username,
+						AccessLevel = registerModel.type,
+						UserName = registerModel.username,
 						Password = registerModel.password,
 						FirstName = registerModel.firstName,
 						LastName = registerModel.lastName,
@@ -93,9 +94,9 @@ namespace MyOnlineShop.Controllers
 					_context.users.Add(user1);
 					_context.SaveChanges();
 					verificationCodeIn(user1.UserName);
-					if(user1 == null)
+					if (user1 == null)
 					{
-					 status = new Dictionary<string, string>() { { "status", "Failed" } };
+						status = new Dictionary<string, string>() { { "status", "Failed" } };
 					}
 					status = new Dictionary<string, string>() { { "status", "Success" } };
 				}
@@ -117,8 +118,8 @@ namespace MyOnlineShop.Controllers
 				UserName = name,
 				ValidTime = DateTime.Now.AddMinutes(10)
 			};
-            _context.verification.Add(VerGen);
-            _context.SaveChanges();
+			_context.verification.Add(VerGen);
+			_context.SaveChanges();
 		}
 
 		[HttpGet]
@@ -152,11 +153,11 @@ namespace MyOnlineShop.Controllers
 				}
 				return Ok(status);
 			}
-            catch
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError);
-            }
-        }
+			catch
+			{
+				return StatusCode(StatusCodes.Status500InternalServerError);
+			}
+		}
 	}
 }
 

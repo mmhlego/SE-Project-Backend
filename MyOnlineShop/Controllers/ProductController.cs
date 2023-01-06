@@ -110,52 +110,53 @@ namespace MyOnlineShop.Controllers
 					return BadRequest(ModelState);
 				}
 
-				Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier).ToString());
+				// Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier).ToString());
 
+				string username = User.FindFirstValue(ClaimTypes.Name);
 
-				if (userId != null)
+				if (username == null)
 				{
-					var user = _context.users.SingleOrDefault(u => u.ID == userId);
-					var accessLevel = user.AccessLevel.ToLower();
-					if (accessLevel == "seller" || accessLevel == "admin")
-					{
-
-						Product productToAdd = new Product()
-						{
-
-							ID = Guid.NewGuid(),
-							Category = p1.category,
-							Name = p1.name,
-							Image = p1.image,
-							Description = p1.description,
-							likes = 0,
-							dislikes = 0
-
-						};
-						productModel pmod = new productModel()
-						{
-							id = productToAdd.ID,
-							category = productToAdd.Category,
-							name = productToAdd.Name,
-							image = productToAdd.Image,
-							description = productToAdd.Description,
-							likes = 0,
-							dislikes = 0
-						};
-						_context.Add(productToAdd);
-						_context.SaveChanges();
-						return Ok(pmod);
-					}
-					else
-					{
-						return Forbid();
-					}
-;
+					return Unauthorized(User);
 				}
-				else
+				var user = _context.users.SingleOrDefault(u => u.UserName == username);
+				var accessLevel = user.AccessLevel.ToLower();
+
+				if (accessLevel != "seller" && accessLevel != "admin")
 				{
-					return Unauthorized();
+					return Forbid();
 				}
+
+
+				Product productToAdd = new Product()
+				{
+
+					ID = Guid.NewGuid(),
+					Category = p1.category,
+					Name = p1.name,
+					Image = p1.image,
+					Description = p1.description,
+					likes = 0,
+					dislikes = 0
+
+				};
+
+				productModel pmod = new productModel()
+				{
+					id = productToAdd.ID,
+					category = productToAdd.Category,
+					name = productToAdd.Name,
+					image = productToAdd.Image,
+					description = productToAdd.Description,
+					likes = 0,
+					dislikes = 0
+				};
+				_context.Add(productToAdd);
+				_context.SaveChanges();
+				return Ok(pmod);
+
+
+
+
 
 
 
@@ -222,17 +223,35 @@ namespace MyOnlineShop.Controllers
 					return BadRequest(ModelState);
 				}
 
-				Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier).ToString());
+				var username = User.FindFirstValue(ClaimTypes.Name);
+				var userId = _context.users.SingleOrDefault(u => u.UserName == username).ID;
 
 
 				if (userId != null)
 				{
 					var user = _context.users.SingleOrDefault(u => u.ID == userId);
 					var accessLevel = user.AccessLevel.ToLower();
+
 					if (accessLevel == "admin")
 					{
 
 						var products = _context.Products.SingleOrDefault((p) => p.ID == id);
+						if (products == null)
+						{
+							return NotFound();
+						}
+
+						var Productprice = _context.productPrices.Where(p => p.ProductID == id).ToList();
+						if (Productprice == null)
+						{
+							return NotFound();
+						}
+						foreach (var p in Productprice)
+						{
+							p.Amount = 0;
+							_context.Update(p);
+							_context.SaveChanges();
+						}
 						var p1 = new productModel()
 						{
 							category = products.Category,
@@ -244,18 +263,6 @@ namespace MyOnlineShop.Controllers
 							name = products.Name
 
 						};
-						var Productprice = _context.productPrices.Where(p => p.ID == id).Single();
-						if (Productprice == null)
-						{
-							return NotFound();
-						}
-						else
-						{
-							Productprice.Amount = 0;
-							_context.Update(Productprice);
-							_context.SaveChanges();
-						}
-
 						return Ok(p1);
 					}
 					else
@@ -287,7 +294,9 @@ namespace MyOnlineShop.Controllers
 				{
 					return BadRequest(ModelState);
 				}
-				Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier).ToString());
+				//Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier).ToString());
+				var username = User.FindFirstValue(ClaimTypes.Name);
+				var userId = _context.users.SingleOrDefault(u => u.UserName == username).ID;
 
 
 				if (userId != null)

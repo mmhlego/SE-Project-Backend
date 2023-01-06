@@ -137,18 +137,29 @@ namespace MyOnlineShop.Controllers
 				else
 				{
 
-					Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier).ToString());
-					var seller = _context.sellers.SingleOrDefault(s => s.UserId == userId);
+					var username = User.FindFirstValue(ClaimTypes.Name);
+					var userId = _context.users.SingleOrDefault(u => u.UserName == username).ID;
+					Seller seller = new Seller();
 					string accesslevel = User.FindFirstValue(ClaimTypes.Role).ToLower();
 					var product = _context.Products.SingleOrDefault(p => p.ID == p1.ProductID);
-					var checkseller = _context.productPrices.SingleOrDefault(p => p.ProductID == p1.ProductID && p.SellerID == seller.ID);
-					var user = _context.users.SingleOrDefault(u => u.ID == seller.UserId);
+
 					if (product == null)
 					{
 						return NotFound();
 					}
-					if (accesslevel == "seller")
+					if (accesslevel == "seller" || accesslevel == "admin")
+
 					{
+						if (accesslevel == "admin")
+						{
+							seller = _context.sellers.SingleOrDefault(s => s.ID == p1.SellerID);
+						}
+						if (accesslevel == "seller")
+						{
+							seller = _context.sellers.SingleOrDefault(s => s.UserId == userId);
+						}
+						var checkseller = _context.productPrices.SingleOrDefault(p => p.ProductID == p1.ProductID && p.SellerID == seller.ID);
+						var user = _context.users.SingleOrDefault(u => u.ID == seller.UserId);
 						if (product != null && checkseller == null)
 						{
 
@@ -268,9 +279,12 @@ namespace MyOnlineShop.Controllers
 				}
 
 
-				Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier).ToString());
+				//  Guid userId =User.FindFirstValue("userId");
+				var username = User.FindFirstValue(ClaimTypes.Name);
+				var userId = _context.users.SingleOrDefault(u => u.UserName == username).ID;
 				var accesslevel = User.FindFirstValue(ClaimTypes.Role).ToLower();
 				ProductPrice productPrice = new ProductPrice();
+
 				if (accesslevel == "seller")
 				{
 					var seller = _context.sellers.SingleOrDefault(s => s.UserId == userId);
@@ -395,7 +409,8 @@ namespace MyOnlineShop.Controllers
 					return BadRequest(ModelState);
 				}
 
-				Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier).ToString());
+				var username = User.FindFirstValue(ClaimTypes.Name);
+				var userId = _context.users.SingleOrDefault(u => u.UserName == username).ID;
 
 				var accesslevel = User.FindFirstValue(ClaimTypes.Role).ToLower();
 				var productPrice = _context.productPrices.SingleOrDefault(p => p.ID == id);
