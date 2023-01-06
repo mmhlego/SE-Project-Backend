@@ -14,7 +14,8 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<MyShopContext>(options =>
 {
 	//options.UseSqlServer("Data Source =DESKTOP-TU89R0L\\EFI;Initial Catalog=SevenShop_DB;Integrated Security=true;Trust Server Certificate=true;");
-	options.UseSqlServer("Data Source=localhost,1433; Database=shopdatabase5; User Id=sa; Password=someThingComplicated1234; Trust Server Certificate=true;");
+	//options.UseSqlServer("Data Source=localhost,1433; Database=shopdatabase5; User Id=sa; Password=someThingComplicated1234; Trust Server Certificate=true;");
+	options.UseSqlServer("Data Source=KARIMI-PC;Initial Catalog=MyOnlineShop_DB;Integrated Security=false;User ID=sa;Password=5291431220;Trust Server Certificate=true;");
 });
 
 #endregion
@@ -59,6 +60,7 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
+app.UseAuthentication();
 
 app.MapControllerRoute(
 	name: "default",

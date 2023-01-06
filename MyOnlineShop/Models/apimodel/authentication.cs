@@ -16,5 +16,7 @@
 		public string phoneNumber { get; set; }
 		public string email { get; set; }
 		public DateTime birthDate { get; set; }
+		// image Url Handler Created By Karimi
+		public string imageurl { get; set; }
 	}
 }

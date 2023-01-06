@@ -18,6 +18,7 @@
 		public string profileImage { get; set; }
 		public DateTime birthDate { get; set; }
 		public string accessLevel { get; set; }
+		public bool isApproved { get; set; }
 		public bool restricted { get; set; }
 	}
 
