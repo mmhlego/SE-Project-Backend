@@ -5,6 +5,7 @@ namespace MyOnlineShop.Controllers
 {
 	public class ProfileController : ControllerBase
 	{
+		//Profile_not_set
 		[HttpGet]
 		[Route("profile/")]
 		public ActionResult GetProfiles()

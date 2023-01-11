@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using MyOnlineShop.Models.apimodel;
 using System.Security.Claims;
 using MyOnlineShop.Models;
+using MyOnlineShop.Services;
 using System.Net;
 using System.Configuration;
 using System.Diagnostics;
@@ -20,7 +21,6 @@ namespace MyOnlineShop.Controllers
 		public AuthenticationController(MyShopContext context)
 		{
 			_context = context;
-
 		}
 
         [HttpPost]
@@ -52,6 +52,7 @@ namespace MyOnlineShop.Controllers
                 HttpContext.SignInAsync(principal);
 
                 var status = new Dictionary<string, string>() { { "status", "success" } };
+                Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Post", "Login");
                 return Ok(status);
             }
         }
@@ -104,7 +105,7 @@ namespace MyOnlineShop.Controllers
 					}
 					status = new Dictionary<string, string>() { { "status", "Success" } };
 				}
-				return Ok(status);
+                return Ok(status);
 			}
 			catch
 			{

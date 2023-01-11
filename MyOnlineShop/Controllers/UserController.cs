@@ -13,7 +13,7 @@ namespace MyOnlineShop.Controllers
 			_context = context;
 
 		}
-
+		//logger-not-set-yet
 
 		[HttpGet]
 		[Route("user/{id}")]

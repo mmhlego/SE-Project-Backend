@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MyOnlineShop.Models;
+using System.Security.Claims;
+using MyOnlineShop.Services;
 using MyOnlineShop.Data;
 using HttpGetAttribute = Microsoft.AspNetCore.Mvc.HttpGetAttribute;
 using RouteAttribute = Microsoft.AspNetCore.Mvc.RouteAttribute;
@@ -176,7 +178,8 @@ namespace MyOnlineShop.Controllers
 						user = user
 					};
 					_context.sellers.Add(schema);
-					_context.SaveChanges();
+                    Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Put", "Create_Seller_by_ID");
+                    _context.SaveChanges();
 				}
 				
 				if (!ModelState.IsValid)
@@ -271,7 +274,8 @@ namespace MyOnlineShop.Controllers
                         };
                     }
 					_context.sellers.Add(seller);
-					_context.SaveChanges();
+                    Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Put", "Update_Seller_Like_by_ID");
+                    _context.SaveChanges();
 				}
 				return Ok(seller);
 			}

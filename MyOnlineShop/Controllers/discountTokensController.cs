@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyOnlineShop.Data;
+using MyOnlineShop.Services;
 using MyOnlineShop.Models.apimodel;
 
 namespace MyOnlineShop.Controllers
@@ -140,8 +141,8 @@ namespace MyOnlineShop.Controllers
 					status = status,
 					cart = eachCart
 				};
-
-				return Ok(t1);
+                Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Put", "DiscountToken_Put_by_ID & use");
+                return Ok(t1);
 
 
 			}

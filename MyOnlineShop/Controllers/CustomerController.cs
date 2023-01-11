@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using MyOnlineShop.Data;
+using System.Security.Claims;
 using HttpGetAttribute = Microsoft.AspNetCore.Mvc.HttpGetAttribute;
 using RouteAttribute = Microsoft.AspNetCore.Mvc.RouteAttribute;
 using MyOnlineShop.Models.apimodel;
 using MyOnlineShop.Models;
+using MyOnlineShop.Services;
 using HttpPutAttribute = Microsoft.AspNetCore.Mvc.HttpPutAttribute;
 using System.Data;
 
@@ -133,7 +135,8 @@ namespace MyOnlineShop.Controllers
 					};
 					_context.customer.Add(custput);
 					_context.SaveChanges();
-					return Ok(custput);
+                    Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Put", "Create_Customer_by_ID");
+                    return Ok(custput);
 				}
 
 				if (!ModelState.IsValid)

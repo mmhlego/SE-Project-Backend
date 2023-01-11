@@ -6,7 +6,7 @@ namespace MyOnlineShop.Controllers
 	public class RequestedProductsController : ControllerBase
 	{
 		RequestedProducts[] requestedproducts = new RequestedProducts[999];
-
+		//not_set_logger
 		public IEnumerable<RequestedProducts> GetAllRequestedProducts()
 		{
 			// Get: RequestedProducts

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MyOnlineShop.Data;
 using MyOnlineShop.Models.apimodel;
+using MyOnlineShop.Services;
 using System.Security.Claims;
 using AuthorizeAttribute = System.Web.Mvc.AuthorizeAttribute;
 using Comment = MyOnlineShop.Models.Comment;
@@ -196,7 +197,8 @@ namespace MyOnlineShop.Controllers
 						};
 						_context.comment.Remove(comment);
 						_context.SaveChanges();
-						return Ok(temp);
+                        Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Delete", "Delete_Comment_by_ID");
+                        return Ok(temp);
 					}
 				}
 				else
@@ -264,7 +266,8 @@ namespace MyOnlineShop.Controllers
 						SendDate = commentToAdd.SentDate,
 						Text = commentToAdd.Text
 					};
-					return Ok(allComments);
+                    Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Post", "Create_Comment");
+                    return Ok(allComments);
 
 				}
 				else
@@ -315,7 +318,8 @@ namespace MyOnlineShop.Controllers
 					{
 						return BadRequest(ModelState);
 					}
-					return Ok();
+                    Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Put", "Like_Put");
+                    return Ok();
 				}
 			}
 			catch

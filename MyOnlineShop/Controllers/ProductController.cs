@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Web.Http;
 using MyOnlineShop.Models;
+using MyOnlineShop.Services;
 using MyOnlineShop.Data;
 using HttpGetAttribute = Microsoft.AspNetCore.Mvc.HttpGetAttribute;
 using HttpPostAttribute = Microsoft.AspNetCore.Mvc.HttpPostAttribute;
@@ -144,7 +145,8 @@ namespace MyOnlineShop.Controllers
 						};
 						_context.Add(productToAdd);
 						_context.SaveChanges();
-						return Ok(pmod);
+                        Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Post", "Post_Product");
+                        return Ok(pmod);
 					}
 					else
 					{
@@ -255,8 +257,8 @@ namespace MyOnlineShop.Controllers
 							_context.Update(Productprice);
 							_context.SaveChanges();
 						}
-
-						return Ok(p1);
+                        Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Delete", "Delete_Product_by_ID");
+                        return Ok(p1);
 					}
 					else
 					{
@@ -321,8 +323,8 @@ namespace MyOnlineShop.Controllers
 								name = p1.name
 
 							};
-
-							return Ok(p2);
+                            Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Put", "Create_Product_by_ID");
+                            return Ok(p2);
 						}
 						else
 						{
@@ -391,8 +393,8 @@ namespace MyOnlineShop.Controllers
 
 
 					};
-
-					return Ok(products);
+                    Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Put", "Update_Product_Like_by_ID");
+                    return Ok(products);
 
 				}
 			}

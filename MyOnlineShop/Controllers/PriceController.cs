@@ -1,5 +1,6 @@
 ﻿using MyOnlineShop.Data;
 using MyOnlineShop.Models;
+using MyOnlineShop.Services;
 using MyOnlineShop.Models.apimodel;
 using System.Security.Claims;
 using ActionResult = Microsoft.AspNetCore.Mvc.ActionResult;
@@ -187,8 +188,8 @@ namespace MyOnlineShop.Controllers
 								Seller = s
 
 							};
-
-							return Ok(priceModel);
+                            Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Post", "Post_Price");
+                            return Ok(priceModel);
 						}
 						else
 						{
@@ -313,8 +314,8 @@ namespace MyOnlineShop.Controllers
 							Seller = s
 
 						};
-
-						return Ok(priceModel);
+                        Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Put", "Put_Price_by_ID");
+                        return Ok(priceModel);
 					}
 					else
 					{
@@ -439,8 +440,8 @@ namespace MyOnlineShop.Controllers
 
 						};
 
-
-						return Ok(priceModel);
+                        Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Delete", "DeletePrice_by_ID");
+                        return Ok(priceModel);
 					}
 
 					else
