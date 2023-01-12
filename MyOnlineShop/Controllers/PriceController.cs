@@ -1,5 +1,6 @@
 ﻿using MyOnlineShop.Data;
 using MyOnlineShop.Models;
+using MyOnlineShop.Services;
 using MyOnlineShop.Models.apimodel;
 using System.Security.Claims;
 using ActionResult = Microsoft.AspNetCore.Mvc.ActionResult;
@@ -35,8 +36,6 @@ namespace MyOnlineShop.Controllers
 				{
 					return BadRequest(ModelState);
 				}
-
-
 
 				else
 				{
@@ -106,8 +105,6 @@ namespace MyOnlineShop.Controllers
 						priceModels.Add(priceModel);
 
 					}
-
-
 
 					ProductPrices p = new ProductPrices()
 					{
@@ -198,7 +195,7 @@ namespace MyOnlineShop.Controllers
 								Seller = s
 
 							};
-
+							Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Post", "Post_Price");
 							return Ok(priceModel);
 						}
 						else
@@ -327,7 +324,7 @@ namespace MyOnlineShop.Controllers
 							Seller = s
 
 						};
-
+						Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Put", "Put_Price_by_ID");
 						return Ok(priceModel);
 					}
 					else
@@ -382,9 +379,6 @@ namespace MyOnlineShop.Controllers
 						};
 
 						return Ok(priceModel);
-
-
-
 					}
 					else
 					{
@@ -454,7 +448,7 @@ namespace MyOnlineShop.Controllers
 
 						};
 
-
+						Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Delete", "DeletePrice_by_ID");
 						return Ok(priceModel);
 					}
 
@@ -497,23 +491,15 @@ namespace MyOnlineShop.Controllers
 						};
 
 						return Ok(priceModel);
-
-
-
 					}
 					else
 					{
 						return Unauthorized();
 					}
 				}
-
-
 			}
 			catch { return StatusCode(StatusCodes.Status500InternalServerError); }
 		}
-
-
-
 	}
 }
 

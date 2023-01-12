@@ -1,12 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
 using MyOnlineShop.Models;
 using MyOnlineShop.Models.apimodel;
-using Newtonsoft.Json;
 using System.Data;
-using Microsoft.AspNetCore.Authorization;
 using MyOnlineShop.Data;
-using System.Web.Http.Filters;
+using MyOnlineShop.Services;
 using System.Security.Claims;
 
 namespace MyOnlineShop.Controllers
@@ -20,7 +17,6 @@ namespace MyOnlineShop.Controllers
 			_context = context;
 		}
 
-		//------------------------------------
 		[HttpGet]
 		[Route("admin/users")]
 		public ActionResult<IEnumerable<usersModel>> userssget([FromQuery] int page, [FromQuery] int usersPerPage)
@@ -67,7 +63,7 @@ namespace MyOnlineShop.Controllers
 			}
 		}
 
-		//------------------------------------
+
 
 		[HttpGet]
 		[Route("admin/users/{id}")]
@@ -117,7 +113,6 @@ namespace MyOnlineShop.Controllers
 				string accessLevel = User.FindFirstValue(ClaimTypes.Role).ToLower();
 				if (accessLevel == "admin")
 				{
-					//User userput = new User();
 					var userId = _context.users.SingleOrDefault(p => p.ID == id);
 
 					if (userId == null)
@@ -131,6 +126,7 @@ namespace MyOnlineShop.Controllers
 						userId.AccessLevel = req.accessLevel;
 						userId.Restricted = req.restricted;
 						_context.SaveChanges();
+						Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Put", "User_Created_By_ID");
 						return Ok(userId);
 					}
 
@@ -173,6 +169,7 @@ namespace MyOnlineShop.Controllers
 					{
 						userId.Restricted = restricted;
 						_context.SaveChanges();
+						Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Delete", "Delete_User_by_ID");
 						return Ok(userId);
 					}
 				}
@@ -278,6 +275,7 @@ namespace MyOnlineShop.Controllers
 
 					_context.tokens.Add(tokenput);
 					_context.SaveChanges();
+					Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Post", "Create_DiscountToken");
 					return Ok(tokenput);
 
 					if (!ModelState.IsValid)
@@ -319,6 +317,7 @@ namespace MyOnlineShop.Controllers
 						_context.SaveChanges();
 
 					}
+					Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Delete", "Delete_DiscountToken_By_ID");
 					return Ok();
 				}
 				else
@@ -574,6 +573,7 @@ namespace MyOnlineShop.Controllers
 					{
 						cartId.Status = status;
 						_context.SaveChanges();
+						Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Put", "Create_Cart_by_ID");
 						return Ok(cartId);
 					}
 				}

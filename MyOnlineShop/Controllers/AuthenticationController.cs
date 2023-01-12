@@ -5,6 +5,7 @@ using MyOnlineShop.Data;
 using MyOnlineShop.Models.apimodel;
 using System.Security.Claims;
 using MyOnlineShop.Models;
+using MyOnlineShop.Services;
 
 namespace MyOnlineShop.Controllers
 {
@@ -15,7 +16,6 @@ namespace MyOnlineShop.Controllers
 		public AuthenticationController(MyShopContext context)
 		{
 			_context = context;
-
 		}
 
 		[HttpPost]
@@ -50,6 +50,7 @@ namespace MyOnlineShop.Controllers
 				var principal = new ClaimsPrincipal(identity);
 				HttpContext.SignInAsync(principal);
 
+				Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Post", "Login");
 				return Ok(new Dictionary<string, string>() { { "status", "Success" } });
 			}
 		}

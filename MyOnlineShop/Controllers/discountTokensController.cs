@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyOnlineShop.Data;
+using MyOnlineShop.Services;
 using MyOnlineShop.Models.apimodel;
 
 namespace MyOnlineShop.Controllers
@@ -46,22 +47,13 @@ namespace MyOnlineShop.Controllers
 					return NotFound();
 				}
 
-
-
 				return Ok(s);
 			}
 			catch
 			{
 				return StatusCode(StatusCodes.Status500InternalServerError);
 			}
-
-
-
 		}
-
-
-
-
 
 		[HttpPut]
 		[Route("discountTokens/{id}/use")]
@@ -140,20 +132,14 @@ namespace MyOnlineShop.Controllers
 					status = status,
 					cart = eachCart
 				};
-
+				Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Put", "DiscountToken_Put_by_ID & use");
 				return Ok(t1);
-
-
 			}
 
 			catch
 			{
 				return StatusCode(StatusCodes.Status500InternalServerError);
 			}
-
-
-
-
 		}
 	}
 }
