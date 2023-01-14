@@ -195,8 +195,9 @@ namespace MyOnlineShop.Controllers
 								Seller = s
 
 							};
-							Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Post", "Post_Price");
-							return Ok(priceModel);
+                            Logger.LoggerFunc(DateTime.Now, "prices",
+                            _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, priceModel);
+                            return Ok(priceModel);
 						}
 						else
 						{
@@ -324,8 +325,9 @@ namespace MyOnlineShop.Controllers
 							Seller = s
 
 						};
-						Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Put", "Put_Price_by_ID");
-						return Ok(priceModel);
+                        Logger.LoggerFunc(DateTime.Now, $"prices/{id:Guid}",
+                            _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, priceModel);
+                        return Ok(priceModel);
 					}
 					else
 					{
@@ -448,8 +450,9 @@ namespace MyOnlineShop.Controllers
 
 						};
 
-						Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Delete", "DeletePrice_by_ID");
-						return Ok(priceModel);
+                        Logger.LoggerFunc(DateTime.Now, $"prices/{id:Guid}",
+                            _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, priceModel);
+                        return Ok(priceModel);
 					}
 
 					else

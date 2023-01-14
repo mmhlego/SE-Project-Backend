@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using MyOnlineShop.Data;
+using MyOnlineShop.Services;
 using MyOnlineShop.Models;
 using MyOnlineShop.Models.apimodel;
 
@@ -99,7 +100,9 @@ namespace MyOnlineShop.Controllers
 						accessLevel = user.AccessLevel,
 						restricted = user.Restricted
 					};
-					return Ok(p1);
+                    Logger.LoggerFunc(DateTime.Now, "profile",
+                            _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, p1);
+                    return Ok(p1);
 				}
 			}
 			catch { return StatusCode(StatusCodes.Status500InternalServerError); }
@@ -391,7 +394,9 @@ namespace MyOnlineShop.Controllers
 					_context.requestedProducts.Add(product);
 					_context.SaveChanges();
 					var p = new Dictionary<string, string> { { "status", "success" } };
-					return Ok(p);
+                    Logger.LoggerFunc(DateTime.Now, "profile/subscribe",
+                            _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, p);
+                    return Ok(p);
 
 				}
 				else
@@ -450,7 +455,9 @@ namespace MyOnlineShop.Controllers
 					_context.requestedProducts.Remove(checksub);
 					_context.SaveChanges();
 					var p = new Dictionary<string, string> { { "status", "success" } };
-					return Ok(p);
+                    Logger.LoggerFunc(DateTime.Now, "profile/subscribe",
+                            _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, p);
+                    return Ok(p);
 				}
 
 
@@ -587,7 +594,9 @@ namespace MyOnlineShop.Controllers
 							status = checkcart.Status,
 							updateDate = checkcart.UpdateDate
 						};
-						return Ok(p);
+                        Logger.LoggerFunc(DateTime.Now, "profile/carts/current",
+                            _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, p);
+                        return Ok(p);
 
 					}
 				}
@@ -636,7 +645,9 @@ namespace MyOnlineShop.Controllers
 					}
 
 					var p = new Dictionary<string, string>() { { "status", "success" } };
-					return Ok(p);
+                    Logger.LoggerFunc(DateTime.Now, "profile/carts/current",
+                            _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, p);
+                    return Ok(p);
 				}
 			}
 			catch { return StatusCode(StatusCodes.Status500InternalServerError); }

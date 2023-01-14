@@ -153,8 +153,9 @@ namespace MyOnlineShop.Controllers
 				};
 				_context.Add(productToAdd);
 				_context.SaveChanges();
-				Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Post", "Post_Product");
-				return Ok(pmod);
+                Logger.LoggerFunc(DateTime.Now, "products",
+                            _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, pmod);
+                return Ok(pmod);
 			}
 			catch
 			{
@@ -251,8 +252,9 @@ namespace MyOnlineShop.Controllers
 							name = products.Name
 
 						};
-						Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Delete", "Delete_Product_by_ID");
-						return Ok(p1);
+                        Logger.LoggerFunc(DateTime.Now, $"products/{id:Guid}",
+                            _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, p1);
+                        return Ok(p1);
 					}
 					else
 					{
@@ -318,8 +320,9 @@ namespace MyOnlineShop.Controllers
 								image = p1.image,
 								name = p1.name
 							};
-
-							return Ok(p2);
+                            Logger.LoggerFunc(DateTime.Now, $"products/{id:Guid}",
+                            _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, p2);
+                            return Ok(p2);
 						}
 						else
 						{
@@ -388,8 +391,9 @@ namespace MyOnlineShop.Controllers
 
 
 					};
-
-					return Ok(products);
+                    Logger.LoggerFunc(DateTime.Now, $"products/{id:Guid}/likes",
+                            _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, products);
+                    return Ok(products);
 
 				}
 			}

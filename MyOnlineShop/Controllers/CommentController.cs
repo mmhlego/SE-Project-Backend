@@ -197,8 +197,9 @@ namespace MyOnlineShop.Controllers
 						};
 						_context.comment.Remove(comment);
 						_context.SaveChanges();
-						Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Delete", "Delete_Comment_by_ID");
-						return Ok(temp);
+                        Logger.LoggerFunc(DateTime.Now, $"comments/{id:Guid}",
+                            _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, temp);
+                        return Ok(temp);
 					}
 				}
 				else
@@ -266,8 +267,9 @@ namespace MyOnlineShop.Controllers
 						SendDate = commentToAdd.SentDate,
 						Text = commentToAdd.Text
 					};
-					Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Post", "Create_Comment");
-					return Ok(allComments);
+                    Logger.LoggerFunc(DateTime.Now, "comments",
+                            _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, allComments);
+                    return Ok(allComments);
 
 				}
 				else
@@ -318,8 +320,9 @@ namespace MyOnlineShop.Controllers
 					{
 						return BadRequest(ModelState);
 					}
-					Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Put", "Like_Put");
-					return Ok();
+                    Logger.LoggerFunc(DateTime.Now, $"comments/{id:Guid}/likes",
+                            _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, Ok());
+                    return Ok();
 				}
 			}
 			catch

@@ -2,9 +2,14 @@
 using MyOnlineShop.Models;
 using MyOnlineShop.Models.apimodel;
 using System.Data;
+using System.IO;
 using MyOnlineShop.Data;
 using MyOnlineShop.Services;
 using System.Security.Claims;
+using Newtonsoft.Json.Linq;
+using System.Web.Helpers;
+using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace MyOnlineShop.Controllers
 {
@@ -114,8 +119,11 @@ namespace MyOnlineShop.Controllers
 				if (accessLevel == "admin")
 				{
 					var userId = _context.users.SingleOrDefault(p => p.ID == id);
-
-					if (userId == null)
+                    if (!ModelState.IsValid)
+                    {
+                        return StatusCode(StatusCodes.Status400BadRequest);
+                    }
+                    if (userId == null)
 					{
 						return StatusCode(StatusCodes.Status404NotFound);
 					}
@@ -126,13 +134,9 @@ namespace MyOnlineShop.Controllers
 						userId.AccessLevel = req.accessLevel;
 						userId.Restricted = req.restricted;
 						_context.SaveChanges();
-						Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Put", "User_Created_By_ID");
+						Logger.LoggerFunc(DateTime.Now, $"admin/users/{id}",
+							_context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, userId);
 						return Ok(userId);
-					}
-
-					if (!ModelState.IsValid)
-					{
-						return StatusCode(StatusCodes.Status400BadRequest);
 					}
 				}
 				else
@@ -158,7 +162,6 @@ namespace MyOnlineShop.Controllers
 				string accessLevel = User.FindFirstValue(ClaimTypes.Role).ToLower();
 				if (accessLevel == "admin")
 				{
-					//User userDelete = new User();
 					var userId = _context.users.SingleOrDefault(p => p.ID == id);
 					bool restricted = true;
 					if (userId == null)
@@ -169,8 +172,9 @@ namespace MyOnlineShop.Controllers
 					{
 						userId.Restricted = restricted;
 						_context.SaveChanges();
-						Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Delete", "Delete_User_by_ID");
-						return Ok(userId);
+                        Logger.LoggerFunc(DateTime.Now, $"admin/users/{id}",
+                            _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, userId);
+                        return Ok(userId);
 					}
 				}
 				else
@@ -265,23 +269,22 @@ namespace MyOnlineShop.Controllers
 				string accessLevel = User.FindFirstValue(ClaimTypes.Role).ToLower();
 				if (accessLevel == "admin")
 				{
-					DiscountToken tokenput = new DiscountToken()
+
+                    if (!ModelState.IsValid)
+                    {
+                        return StatusCode(StatusCodes.Status400BadRequest);
+                    }
+                    DiscountToken tokenput = new DiscountToken()
 					{
 						ExpirationDate = tokenputter.ExpirationDate,
 						Discount = tokenputter.Discount,
 						IsEvent = tokenputter.IsEvent
 					};
-
-
 					_context.tokens.Add(tokenput);
 					_context.SaveChanges();
-					Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Post", "Create_DiscountToken");
-					return Ok(tokenput);
-
-					if (!ModelState.IsValid)
-					{
-						return StatusCode(StatusCodes.Status400BadRequest);
-					}
+                    Logger.LoggerFunc(DateTime.Now, "admin/discountTokens",
+                            _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, tokenput);
+                    return Ok(tokenput);
 				}
 				else
 				{
@@ -317,8 +320,9 @@ namespace MyOnlineShop.Controllers
 						_context.SaveChanges();
 
 					}
-					Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Delete", "Delete_DiscountToken_By_ID");
-					return Ok();
+                    Logger.LoggerFunc(DateTime.Now, $"admin/discountTokens/{id}",
+                            _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, delToken);
+                    return Ok(delToken);
 				}
 				else
 				{
@@ -573,8 +577,9 @@ namespace MyOnlineShop.Controllers
 					{
 						cartId.Status = status;
 						_context.SaveChanges();
-						Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Put", "Create_Cart_by_ID");
-						return Ok(cartId);
+                        Logger.LoggerFunc(DateTime.Now, $"admin/carts/{id}",
+                            _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, cartId);
+                        return Ok(cartId);
 					}
 				}
 				else
@@ -632,6 +637,40 @@ namespace MyOnlineShop.Controllers
 				return StatusCode(StatusCodes.Status500InternalServerError);
 			}
 		}
+
+        [HttpGet]
+        [Route("admin/log")]
+        public ActionResult GetLog()
+		{
+            try
+            {
+                string accessLevel = User.FindFirstValue(ClaimTypes.Role).ToLower();
+                if (accessLevel == "admin")
+                {
+					//string LogLines;
+                    //JObject jsonLogFile;
+                    string path = @"./SystemLog.txt";
+					if (System.IO.File.Exists(path))
+					{
+						var LogLines = System.Text.Json.JsonSerializer.Serialize(System.IO.File.ReadAllText(path));
+						//jsonLogFile = JObject.Parse(LogLines);
+						return Ok(LogLines);
+					}
+					else
+					{
+						return StatusCode(StatusCodes.Status404NotFound);
+					}
+				}
+                else
+                {
+                    return StatusCode(StatusCodes.Status403Forbidden);
+                }
+            }
+            catch
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
 	}
 }
 
