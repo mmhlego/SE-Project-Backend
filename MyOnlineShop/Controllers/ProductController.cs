@@ -12,6 +12,7 @@ using MyOnlineShop.Models.apimodel;
 using HttpPutAttribute = Microsoft.AspNetCore.Mvc.HttpPutAttribute;
 using System.Security.Claims;
 using FsCheck;
+using Org.BouncyCastle.Asn1.Pkcs;
 
 namespace MyOnlineShop.Controllers
 {
@@ -117,15 +118,15 @@ namespace MyOnlineShop.Controllers
 
 				if (username == null)
 				{
-					return Unauthorized(User);
+					return StatusCode(StatusCodes.Status401Unauthorized);
 				}
 				var user = _context.users.SingleOrDefault(u => u.UserName == username);
 				var accessLevel = user.AccessLevel.ToLower();
 
 				if (accessLevel != "seller" && accessLevel != "admin")
 				{
-					return Forbid();
-				}
+                    return StatusCode(StatusCodes.Status403Forbidden);
+                }
 
 
 				Product productToAdd = new Product()
@@ -168,28 +169,40 @@ namespace MyOnlineShop.Controllers
 		{
 			try
 			{
-				var products = _context.Products.SingleOrDefault((p) => p.ID == id);
-				var p1 = new productModel()
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+                var product = _context.Products.ToList();
+                Product p2 = null;
+                int i = 0;
+                foreach (var t in product)
+                {
+                    if (t.ID == id)
+                    {
+                        p2 = product.Single(x => x.ID == id);
+                        i++;
+                    }
+                }
+                
+				if (p2 == null)
 				{
-					category = products.Category,
-					description = products.Description,
-					id = products.ID,
-					dislikes = products.dislikes,
-					likes = products.likes,
-					image = products.Image,
-					name = products.Name
-
-				};
-				if (products == null)
-				{
-					return NotFound();
+					return StatusCode(StatusCodes.Status404NotFound);
 				}
-				if (!ModelState.IsValid)
-				{
-					return BadRequest(ModelState);
-				}
+				
+                var p3 = new productModel()
+                {
+                    category = p2.Category,
+                    description = p2.Description,
+                    id = p2.ID,
+                    dislikes = p2.dislikes,
+                    likes = p2.likes,
+                    image = p2.Image,
+                    name = p2.Name
 
-				return Ok(p1);
+                };
+
+                return Ok(p3);
 			}
 			catch
 			{
@@ -211,58 +224,74 @@ namespace MyOnlineShop.Controllers
 					return BadRequest(ModelState);
 				}
 
-				var username = User.FindFirstValue(ClaimTypes.Name);
-				var userId = _context.users.SingleOrDefault(u => u.UserName == username).ID;
+                string username = User.FindFirstValue(ClaimTypes.Name);
 
+                if (username == null)
+                {
+                    return StatusCode(StatusCodes.Status401Unauthorized);
+                }
+                var user = _context.users.SingleOrDefault(u => u.UserName == username);
+                var accessLevel = user.AccessLevel.ToLower();
 
-				if (userId != null)
+				if (accessLevel != "admin")
 				{
-					var user = _context.users.SingleOrDefault(u => u.ID == userId);
-					var accessLevel = user.AccessLevel.ToLower();
-
-					if (accessLevel == "admin")
-					{
-
-						var products = _context.Products.SingleOrDefault((p) => p.ID == id);
-						if (products == null)
-						{
-							return NotFound();
-						}
-
-						var Productprice = _context.productPrices.Where(p => p.ProductID == id).ToList();
-						if (Productprice == null)
-						{
-							return NotFound();
-						}
-						foreach (var p in Productprice)
-						{
-							p.Amount = 0;
-							_context.Update(p);
-							_context.SaveChanges();
-						}
-						var p1 = new productModel()
-						{
-							category = products.Category,
-							description = products.Description,
-							id = products.ID,
-							dislikes = products.dislikes,
-							likes = products.likes,
-							image = products.Image,
-							name = products.Name
-
-						};
-						Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Delete", "Delete_Product_by_ID");
-						return Ok(p1);
-					}
-					else
-					{
-						return Forbid();
-					}
+					return StatusCode(StatusCodes.Status403Forbidden);
 				}
 				else
 				{
-					return Unauthorized();
-				}
+
+                    var product = _context.Products.ToList();
+                    Product p2 = null;
+                    int i = 0;
+                    foreach (var t in product)
+                    {
+                        if (t.ID == id)
+                        {
+                            p2 = product.Single(x => x.ID == id);
+                            i++;
+                        }
+                    }
+
+                    if (p2 == null)
+                    {
+                        return StatusCode(StatusCodes.Status404NotFound);
+                    }
+                    var productPrice = _context.productPrices.ToList();
+
+                    ProductPrice pp = null;
+                    int j = 0;
+                    foreach (var t in productPrice)
+                    {
+                        if (t.ProductID == id)
+                        {
+                            pp = productPrice.Single(x => x.ProductID == id);
+                            j++;
+                        }
+                    }
+
+                    if (pp == null)
+                    {
+                        return StatusCode(StatusCodes.Status404NotFound);
+                    }
+
+						pp.Amount = 0;
+						_context.Update(pp);
+						_context.SaveChanges();
+					
+					var p1 = new productModel()
+					{
+						category = p2.Category,
+						description = p2.Description,
+						id = p2.ID,
+						dislikes = p2.dislikes,
+						likes = p2.likes,
+						image = p2.Image,
+						name = p2.Name
+
+					};
+					Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Delete", "Delete_Product_by_ID");
+					return Ok(p1);
+				}	
 			}
 			catch
 			{
@@ -285,57 +314,70 @@ namespace MyOnlineShop.Controllers
 				}
 				//Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier).ToString());
 				var username = User.FindFirstValue(ClaimTypes.Name);
-				var userId = _context.users.SingleOrDefault(u => u.UserName == username).ID;
 
 
-				if (userId != null)
-				{
-					var user = _context.users.SingleOrDefault(u => u.ID == userId);
+				if (username != null)
+                {
+                    var userId = _context.users.SingleOrDefault(u => u.UserName == username).ID;
+
+                    var user = _context.users.SingleOrDefault(u => u.ID == userId);
 					var accessLevel = user.AccessLevel.ToLower();
 					if (accessLevel == "seller" || accessLevel == "admin")
 					{
 
-						var product = _context.Products.Where(p => p.ID == id).Single();
-						if (product != null)
+                        var product = _context.Products.ToList();
+                        Product p3 = null;
+                        int i = 0;
+                        foreach (var t in product)
+                        {
+                            if (t.ID == id)
+                            {
+                                p3 = product.Single(x => x.ID == id);
+                                i++;
+                            }
+                        }
+
+                        if (p3 == null)
+                        {
+                            return StatusCode(StatusCodes.Status404NotFound);
+                        }
+                        else
 						{
-							if (p1.name != null) { product.Name = p1.name; }
+							if (p1.name != null) {p3.Name = p1.name; }
 
-							if (p1.category != null) { product.Category = p1.category; }
+							if (p1.category != null) { p3.Category = p1.category; }
 
-							if (p1.description != null) { product.Description = p1.description; }
+							if (p1.description != null) { p3.Description = p1.description; }
 
-							if (p1.image != null) { product.Image = p1.image; }
+							if (p1.image != null) { p3.Image = p1.image; }
 
-							_context.Update(product);
+							_context.Update(p3);
 							_context.SaveChanges();
 							var p2 = new productModel()
 							{
-								category = p1.category,
-								description = p1.description,
+								category = p3.Category,
+								description = p3.Description,
 								id = id,
-								dislikes = 0,
-								likes = 0,
-								image = p1.image,
-								name = p1.name
+								dislikes = p3.dislikes,
+								likes = p3.likes,
+								image = p3.Image,
+								name = p3.Name
 							};
 
 							return Ok(p2);
 						}
-						else
-						{
-							return NotFound();
-						}
+						
 					}
 					else
 					{
 
-						return Forbid();
+						return StatusCode(StatusCodes.Status403Forbidden);
 					}
 				}
 				else
 				{
-					return Unauthorized();
-				}
+                    return StatusCode(StatusCodes.Status401Unauthorized);
+                }
 			}
 
 			catch
@@ -353,10 +395,40 @@ namespace MyOnlineShop.Controllers
 		{
 			try
 			{
-				var product = _context.Products.Where(p => p.ID == id).Single();
-				if (product == null)
-					return NotFound();
-				else
+                var username = User.FindFirstValue(ClaimTypes.Name);
+
+
+				if (username != null)
+				{
+
+
+					var user = _context.users.SingleOrDefault(u => u.UserName == username);
+					var accessLevel = user.AccessLevel.ToLower();
+					if (accessLevel != "customer")
+					{
+                        return StatusCode(StatusCodes.Status403Forbidden);
+                    }
+				}
+				else {
+                    return StatusCode(StatusCodes.Status401Unauthorized);
+                }
+                        var products = _context.Products.ToList();
+                Product product = null;
+                int i = 0;
+                foreach (var t in products)
+                {
+                    if (t.ID == id)
+                    {
+                        product = products.Single(x => x.ID == id);
+                        i++;
+                    }
+                }
+
+                if (product == null)
+                {
+                    return StatusCode(StatusCodes.Status404NotFound);
+                }
+                else
 				{
 
 					if (l.like == true)
@@ -376,7 +448,7 @@ namespace MyOnlineShop.Controllers
 						return BadRequest(ModelState);
 					}
 
-					productModel products = new productModel()
+					productModel productss = new productModel()
 					{
 						category = product.Category,
 						description = product.Description,
@@ -389,7 +461,7 @@ namespace MyOnlineShop.Controllers
 
 					};
 
-					return Ok(products);
+					return Ok(productss);
 
 				}
 			}

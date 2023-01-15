@@ -35,7 +35,7 @@ namespace MyOnlineShop.Controllers
 							.Skip((Page - 1) * CustomersPerPage)
 							.Take(CustomersPerPage).Select(u => new customerModel
 							{
-								id = u.UserId,
+								id = u.ID,
 								username = u.user.UserName,
 								firstName = u.user.FirstName,
 								lastName = u.user.LastName,
@@ -75,31 +75,47 @@ namespace MyOnlineShop.Controllers
 		{
 			try
 			{
-				var user = _context.users.SingleOrDefault(f => f.ID == id);
-				var CustomerId = _context.customer.SingleOrDefault(p => p.UserId == user.ID);
-				customerModel schema = new customerModel()
-				{
-					id = CustomerId.UserId,
-					username = CustomerId.user.UserName,
-					firstName = CustomerId.user.FirstName,
-					lastName = CustomerId.user.LastName,
-					phoneNumber = CustomerId.user.PhoneNumber,
-					email = CustomerId.user.Email,
-					profileImage = CustomerId.user.ImageUrl,
-					birthDate = CustomerId.user.BirthDate,
-					restricted = CustomerId.user.Restricted,
-					address = CustomerId.Address,
-					balance = CustomerId.Balance
-				};
-				if (CustomerId == null)
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                var c1 = _context.customer.ToList();
+                Customer cc = null;
+                int i = 0;
+                foreach (var t in c1)
+                {
+                    if (t.ID == id)
+                    {
+                        cc = c1.Single(x => x.ID == id);
+                        i++;
+                    }
+                }
+               
+				if (cc == null)
 				{
 					return StatusCode(StatusCodes.Status404NotFound);
 				}
-				if (!ModelState.IsValid)
-				{
-					return BadRequest(ModelState);
-				}
-				return Ok(schema);
+				else {
+                    var user = _context.users.SingleOrDefault(f => f.ID == cc.UserId);
+                    customerModel schema = new customerModel()
+                    {
+                        id = cc.UserId,
+                        username = user.UserName,
+                        firstName = user.FirstName,
+                        lastName = user.LastName,
+                        phoneNumber = user.PhoneNumber,
+                        email = user.Email,
+                        profileImage = user.ImageUrl,
+                        birthDate = user.BirthDate,
+                        restricted = user.Restricted,
+                        address = cc.Address,
+                        balance = cc.Balance
+                    };
+                    return Ok(schema);
+                }
+				
+				
 			}
 			catch
 			{
@@ -114,27 +130,47 @@ namespace MyOnlineShop.Controllers
 		{
 			try
 			{
-				Customer custput = new Customer();
-				var CustomerId = _context.customer.SingleOrDefault(p => p.UserId == id);
+                var c1 = _context.customer.ToList();
+                Customer cc = null;
+                int i = 0;
+                foreach (var t in c1)
+                {
+                    if (t.ID == id)
+                    {
+                        cc = c1.Single(x => x.ID == id);
+                        i++;
+                    }
+                }
 
-				if (CustomerId == null)
+				if (cc == null)
 				{
 					return StatusCode(StatusCodes.Status404NotFound);
 				}
 				else
 				{
-					var user = _context.users.SingleOrDefault(f => f.ID == CustomerId.UserId);
-					custput = new Customer()
-					{
-						UserId = id,
-						user = CustomerId.user,
-						Address = custupdate.address,
-						Balance = custupdate.balance
-					};
-					_context.customer.Add(custput);
+					cc.Address = custupdate.address;
+					cc.Balance = custupdate.balance;
+
+					_context.customer.UpdateRange();
 					_context.SaveChanges();
+					var user = _context.users.SingleOrDefault(f => f.ID == cc.UserId);
+                    customerModel schema = new customerModel()
+                    {
+                        id = cc.UserId,
+                        username = user.UserName,
+                        firstName = user.FirstName,
+                        lastName = user.LastName,
+                        phoneNumber = user.PhoneNumber,
+                        email = user.Email,
+                        profileImage = user.ImageUrl,
+                        birthDate = user.BirthDate,
+                        restricted = user.Restricted,
+                        address = cc.Address,
+                        balance = cc.Balance
+                    };
+                    return Ok(schema);
                     Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Put", "Create_Customer_by_ID");
-                    return Ok(custput);
+                    
 				}
 
 				if (!ModelState.IsValid)

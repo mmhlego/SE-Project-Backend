@@ -8,6 +8,7 @@ using RouteAttribute = Microsoft.AspNetCore.Mvc.RouteAttribute;
 using MyOnlineShop.Models.apimodel;
 using HttpPutAttribute = Microsoft.AspNetCore.Mvc.HttpPutAttribute;
 using FromBodyAttribute = Microsoft.AspNetCore.Mvc.FromBodyAttribute;
+using System.Net.WebSockets;
 
 namespace MyOnlineShop.Controllers
 {
@@ -26,21 +27,28 @@ namespace MyOnlineShop.Controllers
 		[Route("sellers")]
 		public IActionResult GetAllSellers(int SellersPerPage, int page)
 		{
+			
 			if (!ModelState.IsValid)
 			{
 				return StatusCode(StatusCodes.Status400BadRequest);
 			}
 			try
 			{
+				if (page == 0) {
+				page = 1;
+				}
+                if (SellersPerPage == 0)
+                {
+                    SellersPerPage = 5;
+                }
 
-				List<Seller> seller = _context.sellers.ToList();
+                List<Seller> seller = _context.sellers.ToList();
 				List<Seller> sellers = new List<Seller>();
 
 				if (seller != null)
 				{
 
-					if ((page * SellersPerPage) - SellersPerPage < seller.Count)
-					{
+					
 						if (page * SellersPerPage > seller.Count)
 						{
 							sellers = seller.GetRange((page * SellersPerPage) - SellersPerPage, seller.Count);
@@ -48,18 +56,11 @@ namespace MyOnlineShop.Controllers
 						}
 						else
 						{
-							sellers = seller.GetRange((page * SellersPerPage) - SellersPerPage, seller.Count);
+							sellers = seller.GetRange((page * SellersPerPage) - SellersPerPage, SellersPerPage);
 
 						}
 
-					}
-					else
-					{
-						return StatusCode(StatusCodes.Status400BadRequest);
-					}
-				}
-
-
+					}			
 				else
 				{
 					return StatusCode(StatusCodes.Status404NotFound);
@@ -67,7 +68,7 @@ namespace MyOnlineShop.Controllers
 				}
 				List<SellerSchema> sellerSchema = new List<SellerSchema>();
 
-				foreach (var ss in seller)
+				foreach (var ss in sellers)
 				{
 					var user = _context.users.SingleOrDefault(p => p.ID == ss.UserId);
 					SellerSchema schema = new SellerSchema()
@@ -117,35 +118,51 @@ namespace MyOnlineShop.Controllers
 		{
 			try
 			{
-				var ss = _context.sellers.SingleOrDefault((p) => p.ID == sellerId);
-				var user = _context.users.SingleOrDefault(p => p.ID == ss.UserId);
-				SellerSchema schema = new SellerSchema()
-				{
-					information = ss.Information,
-					address = ss.Address,
-					id = ss.ID,
-					dislikes = ss.dislikes,
-					likes = ss.likes,
-					image = user.ImageUrl,
-					name = user.UserName,
-					restricted = user.Restricted
-
-				};
-				if (ss == null)
-				{
-					return StatusCode(StatusCodes.Status404NotFound);
-				}
 				if (!ModelState.IsValid)
-				{
-					return StatusCode(StatusCodes.Status400BadRequest);
+                {
+                    return StatusCode(StatusCodes.Status400BadRequest);
+                }
+                var s= _context.sellers.ToList();
+			   Seller ss = null;
+			int i = 0;
+			foreach (var t in s) {
+				if (t.ID == sellerId) {
+					ss = s.Single(x => x.ID == sellerId);
+					i++; 
 				}
-				return Ok(schema);
 			}
+				
+
+				if (i>0)
+				{
+                var user = _context.users.SingleOrDefault(p => p.ID == ss.UserId);
+                SellerSchema schema = new SellerSchema()
+                    {
+                        information = ss.Information,
+                        address = ss.Address,
+                        id = ss.ID,
+                        dislikes = ss.dislikes,
+                        likes = ss.likes,
+                        image = user.ImageUrl,
+                        name = user.UserName,
+                        restricted = user.Restricted
+
+                    };
+                    return Ok(schema);
+                    
+				}
+				else {
+                    return StatusCode(StatusCodes.Status404NotFound);
+                }
+
+
+		}
 			catch
 			{
 				return StatusCode(StatusCodes.Status500InternalServerError);
-			}
-		}
+	}
+}
+
 
 		[HttpPut]
 		[Route("sellers/{sellerId:Guid}")]
@@ -153,28 +170,45 @@ namespace MyOnlineShop.Controllers
 		{
 			try
 			{
-				Seller schema = new Seller();
-				var ss = _context.sellers.SingleOrDefault((p) => p.UserId == sellerId);
+				SellerSchema schema = new SellerSchema();
 
-				if (ss == null)
+            var s1 = _context.sellers.ToList();
+            Seller ss = null;
+            int i = 0;
+            foreach (var t in s1)
+            {
+                if (t.ID == sellerId)
+                {
+                    ss = s1.Single(x => x.ID == sellerId);
+                    i++;
+                }
+            }
+
+            if (ss == null)
 				{
 					return StatusCode(StatusCodes.Status404NotFound);
 				}
 				else
 				{
-					var user = _context.users.SingleOrDefault(p => p.ID == ss.UserId);
-					schema = new Seller()
+                ss.Address = s.address;
+                ss.Information = s.information;
+                _context.sellers.UpdateRange();
+				_context.SaveChanges();
+                var user = _context.users.SingleOrDefault(p => p.ID == ss.UserId);
+					schema = new SellerSchema()
 					{
-						Information = s.information,
-						Address = s.address,
-						UserId = ss.UserId,
+						id = ss.ID,
+						name = user.FirstName + " "+user.LastName,
+						image = user.ImageUrl,
+						information = s.information,
+						address = s.address,
 						dislikes = ss.dislikes,
-						likes = ss.likes,
-						user = user
+						likes = ss.likes,	
+						restricted = user.Restricted
 					};
-					_context.sellers.Add(schema);
-					Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Put", "Create_Seller_by_ID");
-					_context.SaveChanges();
+				
+                Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Put", "Update_Seller_by_ID");
+					
 				}
 
 				if (!ModelState.IsValid)
@@ -198,28 +232,66 @@ namespace MyOnlineShop.Controllers
 
 			try
 			{
-				var stats = new statsModel
-				{
-					page = page,
-					allstatsPerPage = statsPerPage,
-					stats = _context.stats.Where(d => d.productId == s.productId && d.sellerId == id && d.date >= s.datefrom && d.date <= s.dateto)
-					.Skip((page - 1) * statsPerPage)
-					.Take(statsPerPage)
-					.Select(u => new statModel
-					{
-						id = u.Id,
-						productId = u.productId,
-						sellerId = u.sellerId,
-						date = u.date,
-						amount = u.amount,
-						price = u.price
-					}).ToList()
+				var stats = _context.stats.Where(s=> s.sellerId == id).ToList();
 
+				if (page == 0) {
+					page = 1;
+				}
+                if (statsPerPage == 0)
+                {
+                    statsPerPage = 10;
+                }
+
+                if (s.productId != default(Guid))
+                {
+                    stats = stats.Where(c => c.productId == s.productId).ToList();
+                }
+                if (s.datefrom != default(DateTime))
+                {
+                    stats = stats.Where(c => c.date >= s.datefrom).ToList();
+                }
+                if (s.dateto != default(DateTime))
+                {
+                    stats = stats.Where(c => c.date <= s.dateto).ToList();
+                }
+
+                List<Stats> statsForShow;
+
+                    if ((page * statsPerPage) - statsPerPage < stats.Count)
+                    {
+                        if (page * statsPerPage > stats.Count)
+                        {
+                            statsForShow = stats.GetRange((page * statsPerPage) - statsPerPage, stats.Count);
+
+                        }
+                        else
+                        {
+                            statsForShow = stats.GetRange((page * statsPerPage) - statsPerPage, page * statsPerPage);
+
+                        }
+                    }
+                     else
+                     {
+                       return NotFound();
+                     }
+				List<statModel> lastList = new List<statModel>();
+				foreach (var last in statsForShow) {
+					statModel stForAdd = new statModel() { 
+					productId = last.productId,
+					sellerId = last.sellerId,
+					date = last.date,
+					amount = last.amount,
+					price = last.price
+					};
+					lastList.Add(stForAdd);
+				}
+				var toshow = new statsModel()
+				{ 
+				page = page,
+				allstatsPerPage = statsPerPage,
+				stats = lastList
 				};
-				if (stats.stats.Count == 0)
-					return StatusCode(StatusCodes.Status400BadRequest);
-
-				return Ok(stats);
+				return Ok(toshow);
 			}
 			catch
 			{
@@ -234,45 +306,67 @@ namespace MyOnlineShop.Controllers
 		{
 			try
 			{
-				Seller seller = new Seller();
-				var SellerId = _context.sellers.SingleOrDefault(l => l.UserId == id);
+                var s1 = _context.sellers.ToList();
+                Seller ss = null;
+                int i = 0;
+                foreach (var t in s1)
+                {
+                    if (t.ID == id)
+                    {
+                        ss = s1.Single(x => x.ID == id);
+                        i++;
+                    }
+                }
 
-				if (SellerId == null)
+                if (ss == null)
 				{
 					return StatusCode(StatusCodes.Status404NotFound);
 				}
 				else
 				{
-					var user = _context.users.SingleOrDefault(p => p.ID == SellerId.UserId);
+					var user = _context.users.SingleOrDefault(p => p.ID == ss.UserId);
+					var seller = new SellerSchema();
 					if (like)
 					{
-						seller = new Seller()
+						ss.likes += 1;
+						_context.sellers.UpdateRange();
+						_context.SaveChanges();
+						seller = new SellerSchema()
 						{
-							likes = seller.likes + 1,
-							Address = SellerId.Address,
-							Information = SellerId.Information,
-							dislikes = SellerId.dislikes,
-							UserId = SellerId.UserId,
-							user = user
-						};
-					}
+                            id = ss.ID,
+                            name = user.FirstName + " " + user.LastName,
+                            image = user.ImageUrl,
+                            information = ss.Information,
+                            address = ss.Address,
+                            dislikes = ss.dislikes,
+                            likes = ss.likes,
+                            restricted = user.Restricted
+                        };
+                        return Ok(seller);
+                    }
 					else
 					{
-						seller = new Seller()
-						{
-							likes = seller.likes,
-							Address = SellerId.Address,
-							Information = SellerId.Information,
-							dislikes = SellerId.dislikes + 1,
-							UserId = SellerId.UserId,
-							user = user
-						};
-					}
-					_context.sellers.Add(seller);
+                        ss.dislikes += 1;
+                        _context.sellers.UpdateRange();
+                        _context.SaveChanges();
+                        seller = new SellerSchema()
+                        {
+                            id = ss.ID,
+                            name = user.FirstName + " " + user.LastName,
+                            image = user.ImageUrl,
+                            information = ss.Information,
+                            address = ss.Address,
+                            dislikes = ss.dislikes,
+                            likes = ss.likes,
+                            restricted = user.Restricted
+                        };
+                        return Ok(seller);
+                    }
+					
 					Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Put", "Update_Seller_Like_by_ID");
-					_context.SaveChanges();
+					
 				}
-				return Ok(seller);
+				
 			}
 			catch
 			{
