@@ -28,9 +28,7 @@ namespace MyOnlineShop.Models.apimodel
 	}
 	public class postComment
 	{
-		public Guid userId { get; set; }
 		public Guid productId { get; set; }
-
 		public string text { get; set; }
 
 	}

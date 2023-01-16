@@ -53,15 +53,11 @@ namespace MyOnlineShop.Controllers
 				{
 					FilteredComments = FilteredComments.Where(c => c.SentDate <= commentModel.dateTo).ToList();
 				}
-
-
-
 				List<Comment> commentsForShow;
 
 
 				if (FilteredComments != null)
 				{
-
 					if ((commentModel.page * commentModel.commentsPerPage) - commentModel.commentsPerPage < FilteredComments.Count)
 					{
 						if (commentModel.page * commentModel.commentsPerPage > FilteredComments.Count)
@@ -134,10 +130,20 @@ namespace MyOnlineShop.Controllers
 		{
 			try
 			{
-				var comment = _context.comment.SingleOrDefault(c => c.Id == id);
-				var user = _context.users.Single(u => u.ID == comment.UserId);
+				var comment1 = _context.comment.ToList();
+				Comment comment = null;
+				int i = 0;
+				foreach (var t in comment1)
+				{
+					if (t.Id == id)
+					{
+						comment = comment1.Single(x => x.Id == id);
+						i++;
+					}
+				}
 				if (comment != null)
 				{
+					var user = _context.users.Single(u => u.ID == comment.UserId);
 					var temp = new Models.apimodel.Comment()
 					{
 						dislikes = comment.dislikes,
@@ -153,7 +159,7 @@ namespace MyOnlineShop.Controllers
 				}
 				else
 				{
-
+					return StatusCode(StatusCodes.Status404NotFound);
 				}
 			}
 			catch
@@ -169,18 +175,33 @@ namespace MyOnlineShop.Controllers
 		[Authorize]
 		public IActionResult removeComment(Guid id)
 		{
-			Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier).ToString());
-			var comment = _context.comment.SingleOrDefault(c => c.Id == id);
-			var user = _context.users.Single(u => u.ID == userId);
-			string accesslevel = user.AccessLevel.ToLower();
-			if (userId != null)
+
+			//Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier).ToString());
+			string username = User.FindFirstValue(ClaimTypes.Name);
+			var comment1 = _context.comment.ToList();
+			Comment comment = null;
+			int i = 0;
+			foreach (var t in comment1)
 			{
+				if (t.Id == id)
+				{
+					comment = comment1.Single(x => x.Id == id);
+					i++;
+				}
+			}
+
+
+			if (username != null)
+			{
+				var user = _context.users.Single(u => u.UserName == username);
+				string accesslevel = user.AccessLevel.ToLower();
+
 				if (accesslevel == "admin")
 				{
 					if (comment == null)
 					{
 
-						return NotFound();
+						return StatusCode(StatusCodes.Status404NotFound);
 					}
 					else
 					{
@@ -204,14 +225,14 @@ namespace MyOnlineShop.Controllers
 				}
 				else
 				{
-					return Forbid();
+					return StatusCode(StatusCodes.Status403Forbidden);
 				}
 
 			}
 			else
 			{
-				return Unauthorized();
-				;
+				return StatusCode(StatusCodes.Status401Unauthorized);
+
 			}
 		}
 
@@ -224,22 +245,24 @@ namespace MyOnlineShop.Controllers
 
 			try
 			{
-				Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier).ToString());
 
+				//Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier).ToString());
+				string username = User.FindFirstValue(ClaimTypes.Name);
 				if (!ModelState.IsValid)
 				{
 					return BadRequest(ModelState);
 				}
-				if (userId != null)
+				if (username != null)
 				{
+					var user = _context.users.Single(u => u.UserName == username);
 					var commentToAdd = new Comment();
 
 
-					if (commentModel.userId == commentModel.userId)
+					if (user.AccessLevel.ToLower() == "customer")
 					{
 
 						commentToAdd.Id = Guid.NewGuid();
-						commentToAdd.UserId = commentModel.userId;
+						commentToAdd.UserId = user.ID;
 						commentToAdd.ProductId = commentModel.productId;
 						commentToAdd.dislikes = 0;
 						commentToAdd.likes = 0;
@@ -250,17 +273,13 @@ namespace MyOnlineShop.Controllers
 						_context.comment.Add(commentToAdd);
 						_context.SaveChanges();
 					}
-					else
-					{
-						return Forbid();
-					}
 					_context.SaveChanges();
 
 					Models.apimodel.Comment allComments = new Models.apimodel.Comment()
 					{
 						id = commentToAdd.Id,
-						username = "test",
-						userImage = "test",
+						username = username,
+						userImage = user.ImageUrl,
 						dislikes = 0,
 						likes = 0,
 						productId = commentToAdd.ProductId,
@@ -274,7 +293,7 @@ namespace MyOnlineShop.Controllers
 				}
 				else
 				{
-					return Unauthorized();
+					return StatusCode(StatusCodes.Status401Unauthorized);
 				}
 
 			}
@@ -295,34 +314,79 @@ namespace MyOnlineShop.Controllers
 		{
 			try
 			{
-				var comment = _context.comment.Where(p => p.Id == id).Single();
-				if (comment == null)
+				if (!ModelState.IsValid)
 				{
-					return NotFound();
+					return BadRequest(ModelState);
+				}
+				string username = User.FindFirstValue(ClaimTypes.Name);
+				var user = _context.users.Single(u => u.UserName == username);
+
+				if (!ModelState.IsValid)
+				{
+					return BadRequest(ModelState);
+				}
+				if (username != null)
+				{
+					if (user.AccessLevel.ToLower() == "customer")
+					{
+						var comment1 = _context.comment.ToList();
+						Comment comment = null;
+						int i = 0;
+						foreach (var t in comment1)
+						{
+							if (t.Id == id)
+							{
+								comment = comment1.Single(x => x.Id == id);
+								i++;
+							}
+						}
+
+						if (comment == null)
+						{
+							return StatusCode(StatusCodes.Status404NotFound);
+						}
+
+						else
+						{
+
+							if (l.like)
+							{
+								comment.likes = comment.likes + 1;
+
+							}
+							else
+							{
+								comment.dislikes = comment.dislikes + 1;
+
+							}
+							_context.Update(comment);
+							_context.SaveChanges();
+
+							Models.apimodel.Comment CommentForShow = new Models.apimodel.Comment()
+							{
+								id = comment.Id,
+								username = username,
+								userImage = user.ImageUrl,
+								dislikes = comment.dislikes,
+								likes = comment.likes,
+								productId = comment.ProductId,
+								SendDate = comment.SentDate,
+								Text = comment.Text
+							};
+
+							Logger.LoggerFunc($"comments/{id:Guid}/likes", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, Ok());
+							return Ok(CommentForShow);
+						}
+					}
+					else
+					{
+						return StatusCode(StatusCodes.Status403Forbidden);
+					}
 				}
 
 				else
 				{
-
-					if (l.like == true)
-					{
-						comment.likes = comment.likes + 1;
-
-					}
-					else
-					{
-						comment.dislikes = comment.dislikes + 1;
-
-					}
-					_context.Update(comment);
-					_context.SaveChanges();
-					if (!ModelState.IsValid)
-					{
-						return BadRequest(ModelState);
-					}
-					Logger.LoggerFunc($"comments/{id:Guid}/likes",
-							_context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, Ok());
-					return Ok();
+					return StatusCode(StatusCodes.Status401Unauthorized);
 				}
 			}
 			catch
