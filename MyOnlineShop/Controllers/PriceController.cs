@@ -62,20 +62,30 @@ namespace MyOnlineShop.Controllers
 
 					if (prices != null)
 					{
-
-						if ((page * pricesPerPage) - pricesPerPage < prices.Count)
+						var lenght = prices.Count();
+						if (lenght == 0)
 						{
-							if (page * pricesPerPage > prices.Count)
-							{
-								prices = prices.GetRange((page * pricesPerPage) - pricesPerPage, prices.Count);
-
-							}
-							else
-							{
-								prices = prices.GetRange((page * pricesPerPage) - pricesPerPage, page * pricesPerPage);
-
-							}
+							return NotFound();
 						}
+						if ((page - 1) * pricesPerPage > lenght)
+						{
+							page = (lenght / (pricesPerPage));
+						}
+						if (page * pricesPerPage > lenght && (page - 1) * pricesPerPage < lenght)
+						{
+							pricesPerPage = lenght - (page - 1) * pricesPerPage;
+
+						}
+						if (pricesPerPage > lenght)
+						{
+							page = 1;
+							pricesPerPage = lenght;
+						}
+
+						prices = prices.GetRange((page * pricesPerPage) - pricesPerPage, page * pricesPerPage);
+
+
+
 					}
 
 					List<priceModel> priceModels = new List<priceModel>();
@@ -195,8 +205,7 @@ namespace MyOnlineShop.Controllers
 								Seller = s
 
 							};
-							Logger.LoggerFunc("prices",
-							_context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, priceModel);
+							Logger.LoggerFunc("prices", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, priceModel);
 							return Ok(priceModel);
 						}
 						else
@@ -325,8 +334,7 @@ namespace MyOnlineShop.Controllers
 							Seller = s
 
 						};
-						Logger.LoggerFunc($"prices/{id:Guid}",
-							_context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, priceModel);
+						Logger.LoggerFunc($"prices/{id:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, priceModel);
 						return Ok(priceModel);
 					}
 					else
@@ -410,11 +418,12 @@ namespace MyOnlineShop.Controllers
 
 				var accesslevel = User.FindFirstValue(ClaimTypes.Role).ToLower();
 				var productPrice = _context.productPrices.SingleOrDefault(p => p.ID == id);
-				if (productPrice == null)
-				{ return NotFound(); }
+
 
 				if (accesslevel == "seller")
 				{
+					if (productPrice == null)
+					{ return NotFound(); }
 					var seller = _context.sellers.SingleOrDefault(s => s.UserId == userId);
 					var checkseller = _context.productPrices.SingleOrDefault(p => p.ID == id && p.SellerID == seller.ID);
 					var user = _context.users.SingleOrDefault(u => u.ID == seller.UserId);
@@ -450,8 +459,7 @@ namespace MyOnlineShop.Controllers
 
 						};
 
-						Logger.LoggerFunc($"prices/{id:Guid}",
-							_context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, priceModel);
+						Logger.LoggerFunc($"prices/{id:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, priceModel);
 						return Ok(priceModel);
 					}
 
@@ -505,4 +513,3 @@ namespace MyOnlineShop.Controllers
 		}
 	}
 }
-

@@ -16,6 +16,7 @@ namespace MyOnlineShop.Controllers
 			_context = context;
 
 		}
+
 		[HttpGet]
 		[Route("discountTokens/{id}/Validate")]
 		public ActionResult discountTokenGet(Guid id)
@@ -44,7 +45,8 @@ namespace MyOnlineShop.Controllers
 				}
 				else
 				{
-					return NotFound();
+					s = new Dictionary<string, string>() { { "status", "InValid" } };
+
 				}
 
 				return Ok(s);
@@ -132,8 +134,7 @@ namespace MyOnlineShop.Controllers
 					status = status,
 					cart = eachCart
 				};
-				Logger.LoggerFunc($"discountTokens/{id}/use",
-							_context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, t1);
+				Logger.LoggerFunc($"discountTokens/{id}/use", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, t1);
 				return Ok(t1);
 			}
 
@@ -144,4 +145,3 @@ namespace MyOnlineShop.Controllers
 		}
 	}
 }
-

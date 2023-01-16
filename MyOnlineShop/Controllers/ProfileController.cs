@@ -100,14 +100,13 @@ namespace MyOnlineShop.Controllers
 						accessLevel = user.AccessLevel,
 						restricted = user.Restricted
 					};
-					Logger.LoggerFunc("profile",
-							_context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, p1);
+
+					Logger.LoggerFunc("profile", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, p1);
 					return Ok(p1);
 				}
 			}
 			catch { return StatusCode(StatusCodes.Status500InternalServerError); }
 		}
-
 
 
 		[HttpGet]
@@ -136,17 +135,25 @@ namespace MyOnlineShop.Controllers
 				else
 				{
 					var carts = _context.cart.Where(c => c.CustomerID == customer.ID).ToList();
-					if ((page * cartsPerPage) - cartsPerPage < carts.Count)
+					var lenght = carts.Count();
+					if ((page - 1) * cartsPerPage > lenght)
 					{
-						if (page * cartsPerPage > carts.Count)
-						{
-							carts = carts.GetRange((page * cartsPerPage) - cartsPerPage, carts.Count);
-						}
-						else
-						{
-							carts = carts.GetRange((page * cartsPerPage) - cartsPerPage, cartsPerPage);
-						}
+						page = (lenght / (cartsPerPage));
 					}
+					if (page * cartsPerPage > lenght && (page - 1) * cartsPerPage < lenght)
+					{
+						cartsPerPage = lenght - (page - 1) * cartsPerPage;
+
+					}
+					if (cartsPerPage > carts.Count)
+					{
+						page = 1;
+						cartsPerPage = carts.Count;
+					}
+
+					carts = carts.GetRange((page * cartsPerPage) - cartsPerPage, cartsPerPage);
+
+
 					var carts1 = new List<eachCart>();
 					foreach (var c in carts)
 					{
@@ -244,15 +251,11 @@ namespace MyOnlineShop.Controllers
 		{
 			try
 			{
-				if (!ModelState.IsValid)
-				{
-					return BadRequest(ModelState);
-				}
 
 				var username = User.FindFirstValue(ClaimTypes.Name);
 				var user = _context.users.SingleOrDefault(s => s.UserName == username);
 				var customer = _context.customer.SingleOrDefault(c => c.UserId == user.ID);
-				var checkproduct = _context.Products.SingleOrDefault(p => p.ID == productId);
+				var reqproducts = _context.requestedProducts.Where(c => c.UserID == user.ID).ToList();
 				if (username == null)
 				{
 					return Unauthorized();
@@ -262,8 +265,9 @@ namespace MyOnlineShop.Controllers
 					return Forbid();
 				}
 
-				if (productId != null)
+				if (productId != default(Guid))
 				{
+					var checkproduct = _context.Products.SingleOrDefault(p => p.ID == productId);
 					if (checkproduct == null)
 					{
 						return NotFound();
@@ -293,24 +297,32 @@ namespace MyOnlineShop.Controllers
 				}
 				else
 				{
-					var reqproducts = _context.requestedProducts.Where(c => c.UserID == user.ID).ToList();
+
 					if (reqproducts == null)
 					{
 						return NotFound();
 					}
 					else
 					{
-						if ((page * productsPerPage) - productsPerPage < reqproducts.Count)
+						var lenght = reqproducts.Count;
+						if ((page - 1) * productsPerPage > lenght)
 						{
-							if (page * productsPerPage > reqproducts.Count)
-							{
-								reqproducts = reqproducts.GetRange((page * productsPerPage) - productsPerPage, reqproducts.Count);
-							}
-							else
-							{
-								reqproducts = reqproducts.GetRange((page * productsPerPage) - productsPerPage, productsPerPage);
-							}
+							page = (lenght / (productsPerPage));
 						}
+						if (page * productsPerPage > lenght && (page - 1) * productsPerPage < lenght)
+						{
+							productsPerPage = lenght - (page - 1) * productsPerPage;
+
+						}
+						if (productsPerPage > reqproducts.Count)
+						{
+							page = 1;
+							productsPerPage = reqproducts.Count;
+						}
+
+						reqproducts = reqproducts.GetRange((page * productsPerPage) - productsPerPage, productsPerPage);
+
+
 						var products = new List<productModel>();
 						foreach (var pro in reqproducts)
 						{
@@ -334,15 +346,9 @@ namespace MyOnlineShop.Controllers
 							products = products
 						};
 
-
 						return Ok(p);
-
-
 					}
-
 				}
-
-
 			}
 			catch
 			{
@@ -394,8 +400,7 @@ namespace MyOnlineShop.Controllers
 					_context.requestedProducts.Add(product);
 					_context.SaveChanges();
 					var p = new Dictionary<string, string> { { "status", "success" } };
-					Logger.LoggerFunc("profile/subscribe",
-							_context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, p);
+					Logger.LoggerFunc("profile/subscribe", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, p);
 					return Ok(p);
 
 				}
@@ -410,8 +415,6 @@ namespace MyOnlineShop.Controllers
 				return StatusCode(StatusCodes.Status500InternalServerError);
 			}
 		}
-
-
 
 
 		[HttpDelete]
@@ -455,8 +458,7 @@ namespace MyOnlineShop.Controllers
 					_context.requestedProducts.Remove(checksub);
 					_context.SaveChanges();
 					var p = new Dictionary<string, string> { { "status", "success" } };
-					Logger.LoggerFunc("profile/subscribe",
-							_context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, p);
+					Logger.LoggerFunc("profile/subscribe", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, p);
 					return Ok(p);
 				}
 
@@ -467,9 +469,6 @@ namespace MyOnlineShop.Controllers
 				return StatusCode(StatusCodes.Status500InternalServerError);
 			}
 		}
-
-
-
 
 
 		[HttpGet]
@@ -527,8 +526,6 @@ namespace MyOnlineShop.Controllers
 		}
 
 
-
-
 		[HttpPut]
 		[Route("profile/carts/current")]
 		public ActionResult profilecartcurrentput([FromBody] eachproduct product)
@@ -556,25 +553,55 @@ namespace MyOnlineShop.Controllers
 					var checkcart = _context.cart.SingleOrDefault(c => c.Status.ToLower() == "filling" && c.CustomerID == customer.ID);
 					if (checkcart == null)
 					{
-						return NotFound();
+						var cart = new Cart()
+						{
+							CustomerID = customer.ID,
+							ID = Guid.NewGuid(),
+							TotalPrice = 0,
+							Status = "filling",
+							UpdateDate = DateTime.Now,
+							Description = "customers cart"
+						};
+						_context.cart.Add(cart);
+						_context.SaveChanges();
+						checkcart = cart;
 					}
-					else
+
 					{
-						var productprice = _context.productPrices.SingleOrDefault(p => p.ProductID == product.productId);
+						var productprice = _context.productPrices.SingleOrDefault(p => p.ID == product.productId);
 						if (productprice == null)
 						{
 							return NotFound();
 						}
-
-						Order order = new Order()
+						var product1 = _context.Products.SingleOrDefault(p => p.ID == productprice.ProductID);
+						if (product.amount > productprice.Amount)
 						{
-							ID = Guid.NewGuid(),
-							Amount = product.amount,
-							ProductPriceID = productprice.ID,
-							CartID = checkcart.ID
+							return NotFound();
+						}
+						var checkorder = _context.orders.SingleOrDefault(c => c.CartID == checkcart.ID && c.ProductPriceID == product.productId);
 
-						};
-						_context.orders.Add(order);
+						if (checkorder != null)
+						{
+							checkorder.Amount = checkorder.Amount + product.amount;
+
+							_context.Update(checkorder);
+							_context.SaveChanges();
+						}
+						else
+						{
+							Order order = new Order()
+							{
+								ID = Guid.NewGuid(),
+								Amount = product.amount,
+								ProductPriceID = productprice.ID,
+								CartID = checkcart.ID
+
+							};
+							_context.orders.Add(order);
+							_context.SaveChanges();
+						}
+						checkcart.TotalPrice = checkcart.TotalPrice + (product.amount * productprice.Price);
+						_context.cart.Update(checkcart);
 						_context.SaveChanges();
 						var orders = _context.orders.Where(s => s.CartID == checkcart.ID).ToList();
 						List<eachproduct> eachproducts = new List<eachproduct>();
@@ -594,8 +621,7 @@ namespace MyOnlineShop.Controllers
 							status = checkcart.Status,
 							updateDate = checkcart.UpdateDate
 						};
-						Logger.LoggerFunc("profile/carts/current",
-							_context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, p);
+						Logger.LoggerFunc("profile/carts/current", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, p);
 						return Ok(p);
 
 					}
@@ -603,8 +629,6 @@ namespace MyOnlineShop.Controllers
 			}
 			catch { return StatusCode(StatusCodes.Status500InternalServerError); }
 		}
-
-
 
 
 		[HttpDelete]
@@ -645,8 +669,7 @@ namespace MyOnlineShop.Controllers
 					}
 
 					var p = new Dictionary<string, string>() { { "status", "success" } };
-					Logger.LoggerFunc("profile/carts/current",
-							_context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, p);
+					Logger.LoggerFunc("profile/carts/current", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, p);
 					return Ok(p);
 				}
 			}
@@ -656,4 +679,3 @@ namespace MyOnlineShop.Controllers
 
 	}
 }
-
