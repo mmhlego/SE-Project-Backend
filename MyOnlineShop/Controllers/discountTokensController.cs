@@ -132,9 +132,9 @@ namespace MyOnlineShop.Controllers
 					status = status,
 					cart = eachCart
 				};
-                Logger.LoggerFunc(DateTime.Now, $"discountTokens/{id}/use",
-                            _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, t1);
-                return Ok(t1);
+				Logger.LoggerFunc($"discountTokens/{id}/use",
+							_context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, t1);
+				return Ok(t1);
 			}
 
 			catch

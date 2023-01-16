@@ -116,11 +116,11 @@ namespace MyOnlineShop.Controllers
 			{
 				Customer custput = new Customer();
 				var CustomerId = _context.customer.SingleOrDefault(p => p.UserId == id);
-                if (!ModelState.IsValid)
-                {
-                    return StatusCode(StatusCodes.Status400BadRequest);
-                }
-                if (CustomerId == null)
+				if (!ModelState.IsValid)
+				{
+					return StatusCode(StatusCodes.Status400BadRequest);
+				}
+				if (CustomerId == null)
 				{
 					return StatusCode(StatusCodes.Status404NotFound);
 				}
@@ -136,9 +136,9 @@ namespace MyOnlineShop.Controllers
 					};
 					_context.customer.Add(custput);
 					_context.SaveChanges();
-                    Logger.LoggerFunc(DateTime.Now, $"Customers/{id}",
-                            _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, custput);
-                    return Ok(custput);
+					Logger.LoggerFunc($"Customers/{id}",
+							_context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, custput);
+					return Ok(custput);
 				}
 			}
 			catch

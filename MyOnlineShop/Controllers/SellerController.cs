@@ -173,9 +173,9 @@ namespace MyOnlineShop.Controllers
 						user = user
 					};
 					_context.sellers.Add(schema);
-                    Logger.LoggerFunc(DateTime.Now, $"sellers/{sellerId:Guid}",
-                            _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, schema);
-                    _context.SaveChanges();
+					Logger.LoggerFunc($"sellers/{sellerId:Guid}",
+							_context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, schema);
+					_context.SaveChanges();
 				}
 
 				if (!ModelState.IsValid)
@@ -270,9 +270,9 @@ namespace MyOnlineShop.Controllers
 						};
 					}
 					_context.sellers.Add(seller);
-                    Logger.LoggerFunc(DateTime.Now, $"Sellers/{id}/likes",
-                            _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, seller);
-                    _context.SaveChanges();
+					Logger.LoggerFunc($"Sellers/{id}/likes",
+							_context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, seller);
+					_context.SaveChanges();
 				}
 				return Ok(seller);
 			}

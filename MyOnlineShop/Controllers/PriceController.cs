@@ -195,9 +195,9 @@ namespace MyOnlineShop.Controllers
 								Seller = s
 
 							};
-                            Logger.LoggerFunc(DateTime.Now, "prices",
-                            _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, priceModel);
-                            return Ok(priceModel);
+							Logger.LoggerFunc("prices",
+							_context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, priceModel);
+							return Ok(priceModel);
 						}
 						else
 						{
@@ -325,9 +325,9 @@ namespace MyOnlineShop.Controllers
 							Seller = s
 
 						};
-                        Logger.LoggerFunc(DateTime.Now, $"prices/{id:Guid}",
-                            _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, priceModel);
-                        return Ok(priceModel);
+						Logger.LoggerFunc($"prices/{id:Guid}",
+							_context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, priceModel);
+						return Ok(priceModel);
 					}
 					else
 					{
@@ -450,9 +450,9 @@ namespace MyOnlineShop.Controllers
 
 						};
 
-                        Logger.LoggerFunc(DateTime.Now, $"prices/{id:Guid}",
-                            _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, priceModel);
-                        return Ok(priceModel);
+						Logger.LoggerFunc($"prices/{id:Guid}",
+							_context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, priceModel);
+						return Ok(priceModel);
 					}
 
 					else
