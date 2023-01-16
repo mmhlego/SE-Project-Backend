@@ -50,8 +50,9 @@ namespace MyOnlineShop.Controllers
 				var principal = new ClaimsPrincipal(identity);
 				HttpContext.SignInAsync(principal);
 
-				Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Post", "Login");
-				return Ok(new Dictionary<string, string>() { { "status", "Success" } });
+                Logger.LoggerFunc(DateTime.Now, "auth/login",
+                            _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, new Dictionary<string, string>() { { "status", "Success" } });
+                return Ok(new Dictionary<string, string>() { { "status", "Success" } });
 			}
 		}
 
