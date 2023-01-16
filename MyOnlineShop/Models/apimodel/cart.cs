@@ -7,7 +7,14 @@
 		public List<eachCart> carts { get; set; }
 
 	}
-	public class eachCart
+    public class tokenresmodel
+    {
+        public Guid id { get; set; }
+        public DateTime expirationDate { get; set; }
+        public string discount { get; set; }
+        public Boolean isEvent { get; set; }
+    }
+    public class eachCart
 	{
 		public Guid id { get; set; }
 		public Guid customerId { get; set; }

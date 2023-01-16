@@ -375,7 +375,7 @@ IsEvent = u.IsEvent
 
         [HttpPost]
         [Route("admin/discountTokens")]
-        public ActionResult discountTokenspost([FromBody] tokenreqModel tokenputter)
+        public ActionResult discountTokenspost([FromBody] tokenresmodel tokenputter)
         {
             try
             {
