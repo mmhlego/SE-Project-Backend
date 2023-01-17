@@ -70,19 +70,27 @@ namespace MyOnlineShop.Controllers
 				var token1 = _context.tokens.Where(t => t.Id == id).Single();
 				if (customer == null)
 				{
-					return Unauthorized();
+                    Logger.LoggerFunc($"discountTokens/{id}/use", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+                            cartId, Unauthorized());
+                    return Unauthorized();
 				}
 				if (cart == null)
 				{
-					return NotFound();
+                    Logger.LoggerFunc($"discountTokens/{id}/use", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+                            cartId, NotFound());
+                    return NotFound();
 				}
 				if (cart.Status == "Filling" || cart.TotalPrice == 0)
 				{
-					return BadRequest();
+                    Logger.LoggerFunc($"discountTokens/{id}/use", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+                            cartId, BadRequest());
+                    return BadRequest();
 				}
 				if (!ModelState.IsValid)
 				{
-					return BadRequest(ModelState);
+                    Logger.LoggerFunc($"discountTokens/{id}/use", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+                            cartId, BadRequest(ModelState));
+                    return BadRequest(ModelState);
 				}
 
 				var status = "Invalid";
@@ -134,8 +142,9 @@ namespace MyOnlineShop.Controllers
 					status = status,
 					cart = eachCart
 				};
-				Logger.LoggerFunc($"discountTokens/{id}/use", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, t1);
-				return Ok(t1);
+                Logger.LoggerFunc($"discountTokens/{id}/use", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+                            cartId, t1);
+                return Ok(t1);
 			}
 
 			catch

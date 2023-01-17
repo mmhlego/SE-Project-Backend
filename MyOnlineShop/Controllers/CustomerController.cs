@@ -145,7 +145,9 @@ namespace MyOnlineShop.Controllers
 
 				if (cc == null)
 				{
-					return StatusCode(StatusCodes.Status404NotFound);
+                    Logger.LoggerFunc($"Customers/{id}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+                            custupdate, StatusCode(StatusCodes.Status404NotFound));
+                    return StatusCode(StatusCodes.Status404NotFound);
 				}
 				else
 				{
@@ -169,14 +171,17 @@ namespace MyOnlineShop.Controllers
 						address = cc.Address,
 						balance = cc.Balance
 					};
-					Logger.LoggerFunc($"Customers/{id}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, schema);
+					Logger.LoggerFunc($"Customers/{id}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+                            custupdate, schema); 
 					return Ok(schema);
 
 				}
 			}
 			catch
 			{
-				return StatusCode(StatusCodes.Status500InternalServerError);
+                Logger.LoggerFunc($"Customers/{id}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+                            custupdate, StatusCode(StatusCodes.Status500InternalServerError));
+                return StatusCode(StatusCodes.Status500InternalServerError);
 			}
 		}
 
