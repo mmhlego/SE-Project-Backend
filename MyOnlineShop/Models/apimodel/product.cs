@@ -1,5 +1,4 @@
-﻿using System;
-namespace MyOnlineShop.Models.apimodel
+﻿namespace MyOnlineShop.Models.apimodel
 {
 	public class ProductPageGetRequestModel
 	{
@@ -17,7 +16,7 @@ namespace MyOnlineShop.Models.apimodel
 		public double priceFrom { get; set; }
 		public double priceTo { get; set; }
 		public Boolean available { get; set; }
-		public string catagory { get; set; }
+		public string category { get; set; }
 
 	}
 	public class ProductPagePostRequestModel

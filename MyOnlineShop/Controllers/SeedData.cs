@@ -1,14 +1,6 @@
-﻿using MessagePack.Formatters;
-using System.Security.Claims;
-using MyOnlineShop.Services;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using MyOnlineShop.Data;
 using MyOnlineShop.Models;
-using NuGet.Protocol.Plugins;
-using System.ComponentModel;
-using System.Net.WebSockets;
-using System.Runtime.InteropServices;
-using System.Text;
 
 namespace MyOnlineShop.Controllers
 {
@@ -87,7 +79,7 @@ namespace MyOnlineShop.Controllers
 					_context.SaveChanges();
 				}
 			}
-            return Ok();
+			return Ok();
 		}
 
 		[HttpPost]

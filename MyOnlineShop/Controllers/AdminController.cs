@@ -2,12 +2,9 @@
 using MyOnlineShop.Models;
 using MyOnlineShop.Models.apimodel;
 using System.Data;
-using System.IO;
 using MyOnlineShop.Data;
 using MyOnlineShop.Services;
 using System.Security.Claims;
-using Microsoft.EntityFrameworkCore;
-using Org.BouncyCastle.Ocsp;
 
 namespace MyOnlineShop.Controllers
 {
@@ -37,8 +34,9 @@ namespace MyOnlineShop.Controllers
 					var length = _context.users.ToList().Count();
 					var totalPages = (int)Math.Ceiling((decimal)length / (decimal)usersPerPage);
 					page = Math.Min(totalPages, page);
-					var start = (page - 1) * usersPerPage;
+					var start = Math.Max((page - 1) * usersPerPage, 0);
 					var end = Math.Min(page * usersPerPage, length);
+					var count = Math.Max(end - start, 0);
 
 					var users = new Pagination<userModel>
 					{
@@ -47,7 +45,7 @@ namespace MyOnlineShop.Controllers
 						perPage = usersPerPage,
 						data = _context.users
 					.Skip(start)
-					.Take(end - start)
+					.Take(count)
 					.Select(u => new userModel
 					{
 						id = u.ID,

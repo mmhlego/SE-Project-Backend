@@ -8,7 +8,6 @@ using RouteAttribute = Microsoft.AspNetCore.Mvc.RouteAttribute;
 using MyOnlineShop.Models.apimodel;
 using HttpPutAttribute = Microsoft.AspNetCore.Mvc.HttpPutAttribute;
 using FromBodyAttribute = Microsoft.AspNetCore.Mvc.FromBodyAttribute;
-using NuGet.Protocol.Plugins;
 
 namespace MyOnlineShop.Controllers
 {

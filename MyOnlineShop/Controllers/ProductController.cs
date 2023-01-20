@@ -12,7 +12,6 @@ using MyOnlineShop.Models.apimodel;
 using HttpPutAttribute = Microsoft.AspNetCore.Mvc.HttpPutAttribute;
 using System.Security.Claims;
 using FsCheck;
-using Org.BouncyCastle.Asn1.Pkcs;
 
 namespace MyOnlineShop.Controllers
 {
@@ -31,59 +30,53 @@ namespace MyOnlineShop.Controllers
 
 		{
 
-			List<ProductPrice> product1 = _context.productPrices.ToList();
+			List<ProductPrice> prices = _context.productPrices.ToList();
 
 			if (p1.available == true)
 			{
-				product1 = _context.productPrices.Where(p => p.Price >= p1.priceFrom && p.Price <= p1.priceTo && p.Amount > 0).ToList();
+				prices = _context.productPrices.Where(p => p.Price >= p1.priceFrom && p.Price <= p1.priceTo && p.Amount > 0).ToList();
 			}
 			else
 			{
-				product1 = _context.productPrices.Where(p => p.Price >= p1.priceFrom && p.Price <= p1.priceTo && p.Amount == 0).ToList();
+				prices = _context.productPrices.Where(p => p.Price >= p1.priceFrom && p.Price <= p1.priceTo).ToList();
 			}
 
-			if (p1.catagory != null)
+			if (p1.category != null)
 			{
 				List<ProductPrice> productPrices = new List<ProductPrice>();
-				foreach (ProductPrice p in product1)
+				foreach (ProductPrice p in prices)
 				{
 					var item = _context.Products.SingleOrDefault(x => x.ID == p.ProductID);
-					if (item.Category == p1.catagory)
+					if (item.Category == p1.category)
 					{
 						productPrices.Add(p);
 					}
 				}
-				product1 = productPrices;
+				prices = productPrices;
 			}
 			List<ProductPrice> products = new List<ProductPrice>();
 
-			if ((p1.page * p1.productsPerPage) - p1.productsPerPage < product1.Count)
-			{
-				if (p1.page * p1.productsPerPage > product1.Count)
-				{
-                    products = product1.GetRange((p1.page * p1.productsPerPage) - p1.productsPerPage, product1.Count);
+			var totalPages = (int)Math.Ceiling(Convert.ToDecimal(prices.Count) / Convert.ToDecimal(p1.productsPerPage));
+			p1.page = Math.Min(totalPages, p1.page);
+			var start = Math.Max((p1.page - 1) * p1.productsPerPage, 0);
+			var end = Math.Min(p1.page * p1.productsPerPage, prices.Count);
+			var count = Math.Max(end - start, 0);
 
-				}
-				else
-				{
-
-					products = product1.GetRange((p1.page * p1.productsPerPage) - p1.productsPerPage, p1.productsPerPage);
-				}
-			}
+			products = prices.GetRange(start, count);
 
 			List<productModel> productModels = new List<productModel>();
 			foreach (ProductPrice productPrice in products)
 			{
-				var eachproduct = _context.Products.SingleOrDefault(p => p.ID == productPrice.ProductID);
+				var eachProduct = _context.Products.SingleOrDefault(p => p.ID == productPrice.ProductID);
 				productModel p = new productModel()
 				{
-					id = eachproduct.ID,
-					image = eachproduct.Image,
-					name = eachproduct.Name,
-					category = eachproduct.Category,
-					description = eachproduct.Description,
-					dislikes = eachproduct.dislikes,
-					likes = eachproduct.likes
+					id = eachProduct.ID,
+					image = eachProduct.Image,
+					name = eachProduct.Name,
+					category = eachProduct.Category,
+					description = eachProduct.Description,
+					dislikes = eachProduct.dislikes,
+					likes = eachProduct.likes
 				};
 				productModels.Add(p);
 			}
@@ -92,6 +85,7 @@ namespace MyOnlineShop.Controllers
 			{
 				page = p1.page,
 				perPage = p1.productsPerPage,
+				totalPages = totalPages,
 				data = productModels
 			};
 
