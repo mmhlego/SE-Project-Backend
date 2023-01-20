@@ -1,14 +1,5 @@
 ﻿namespace MyOnlineShop.Models.apimodel
 {
-	public class customersModel
-	{
-		public int customersPerPage { get; set; }
-		public int page { get; set; }
-		public List<customerModel> customers { get; set; }
-
-	}
-
-
 	public class customerreqModel
 	{
 		public string address { get; set; }

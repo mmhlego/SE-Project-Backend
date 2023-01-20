@@ -1,13 +1,6 @@
 ﻿using System;
 namespace MyOnlineShop.Models.apimodel
 {
-	public class productsModel
-	{
-		public int productsPerPage { get; set; }
-		public int page { get; set; }
-		public List<productModel> products { get; set; }
-
-	}
 	public class ProductPageGetRequestModel
 	{
 		public ProductPageGetRequestModel()

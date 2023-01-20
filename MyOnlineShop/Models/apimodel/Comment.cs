@@ -1,12 +1,5 @@
 namespace MyOnlineShop.Models.apimodel
 {
-	public class Comments
-	{
-		public int commentsPerPage { get; set; }
-		public int page { get; set; }
-
-		public List<apimodel.Comment> comments { get; set; }
-	}
 	public class CommentModel
 	{
 		public CommentModel()

@@ -116,11 +116,11 @@ namespace MyOnlineShop.Controllers
 
 					}
 
-					ProductPrices p = new ProductPrices()
+					var p = new Pagination<priceModel>()
 					{
 						page = page,
-						pricePerPage = pricesPerPage,
-						prices = priceModels
+						perPage = pricesPerPage,
+						data = priceModels
 					};
 					return Ok(p);
 				}
@@ -139,9 +139,9 @@ namespace MyOnlineShop.Controllers
 			{
 				if (!ModelState.IsValid)
 				{
-                    Logger.LoggerFunc("prices", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                            p1, BadRequest(ModelState));
-                    return BadRequest(ModelState);
+					Logger.LoggerFunc("prices", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+							p1, BadRequest(ModelState));
+					return BadRequest(ModelState);
 				}
 				else
 				{
@@ -154,9 +154,9 @@ namespace MyOnlineShop.Controllers
 
 					if (product == null)
 					{
-                        Logger.LoggerFunc("prices", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                            p1, NotFound());
-                        return NotFound();
+						Logger.LoggerFunc("prices", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+							p1, NotFound());
+						return NotFound();
 					}
 					if (accesslevel == "seller" || accesslevel == "admin")
 
@@ -209,31 +209,32 @@ namespace MyOnlineShop.Controllers
 								Seller = s
 
 							};
-                            Logger.LoggerFunc("prices", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+							Logger.LoggerFunc("prices", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
 								p1, priceModel);
-                            return Ok(priceModel);
+							return Ok(priceModel);
 						}
 						else
 						{
-                            Logger.LoggerFunc("prices", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                                p1, BadRequest());
-                            return BadRequest();
+							Logger.LoggerFunc("prices", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+								p1, BadRequest());
+							return BadRequest();
 						}
 					}
 
 					else
 					{
-                        Logger.LoggerFunc("prices", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                                p1, Unauthorized());
-                        return Unauthorized();
+						Logger.LoggerFunc("prices", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+								p1, Unauthorized());
+						return Unauthorized();
 					}
 
 				}
 			}
-			catch {
-                Logger.LoggerFunc("prices", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                                p1, StatusCode(StatusCodes.Status500InternalServerError));
-                return StatusCode(StatusCodes.Status500InternalServerError);
+			catch
+			{
+				Logger.LoggerFunc("prices", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+								p1, StatusCode(StatusCodes.Status500InternalServerError));
+				return StatusCode(StatusCodes.Status500InternalServerError);
 			}
 		}
 
@@ -295,9 +296,9 @@ namespace MyOnlineShop.Controllers
 			{
 				if (!ModelState.IsValid)
 				{
-                    Logger.LoggerFunc($"prices/{id:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                                p1, BadRequest(ModelState));
-                    return BadRequest(ModelState);
+					Logger.LoggerFunc($"prices/{id:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+								p1, BadRequest(ModelState));
+					return BadRequest(ModelState);
 				}
 
 
@@ -349,15 +350,15 @@ namespace MyOnlineShop.Controllers
 							Seller = s
 
 						};
-                        Logger.LoggerFunc($"prices/{id:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                                p1, priceModel);
-                        return Ok(priceModel);
+						Logger.LoggerFunc($"prices/{id:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+								p1, priceModel);
+						return Ok(priceModel);
 					}
 					else
 					{
-                        Logger.LoggerFunc($"prices/{id:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                                p1, Forbid());
-                        return Forbid();
+						Logger.LoggerFunc($"prices/{id:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+								p1, Forbid());
+						return Forbid();
 					}
 				}
 				else
@@ -370,9 +371,9 @@ namespace MyOnlineShop.Controllers
 						var user = _context.users.SingleOrDefault(u => u.ID == seller.UserId);
 						if (productPrice == null)
 						{
-                            Logger.LoggerFunc($"prices/{id:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                                p1, NotFound());
-                            return NotFound();
+							Logger.LoggerFunc($"prices/{id:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+								p1, NotFound());
+							return NotFound();
 						}
 						productPrice.Price = p1.Price;
 						productPrice.Amount = p1.Amount + productPrice.Amount;
@@ -404,24 +405,24 @@ namespace MyOnlineShop.Controllers
 							Seller = s
 
 						};
-                        Logger.LoggerFunc($"prices/{id:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                                p1, priceModel);
-                        return Ok(priceModel);
+						Logger.LoggerFunc($"prices/{id:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+								p1, priceModel);
+						return Ok(priceModel);
 					}
 					else
 					{
-                        Logger.LoggerFunc($"prices/{id:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                                p1, Unauthorized());
-                        return Unauthorized();
+						Logger.LoggerFunc($"prices/{id:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+								p1, Unauthorized());
+						return Unauthorized();
 					}
 				}
 
 			}
 			catch
 			{
-                Logger.LoggerFunc($"prices/{id:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                                p1, StatusCode(StatusCodes.Status500InternalServerError));
-                return StatusCode(StatusCodes.Status500InternalServerError); 
+				Logger.LoggerFunc($"prices/{id:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+								p1, StatusCode(StatusCodes.Status500InternalServerError));
+				return StatusCode(StatusCodes.Status500InternalServerError);
 			}
 		}
 
@@ -435,9 +436,9 @@ namespace MyOnlineShop.Controllers
 			{
 				if (!ModelState.IsValid)
 				{
-                    Logger.LoggerFunc($"prices/{id:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                                id, BadRequest(ModelState));
-                    return BadRequest(ModelState);
+					Logger.LoggerFunc($"prices/{id:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+								id, BadRequest(ModelState));
+					return BadRequest(ModelState);
 				}
 
 				var username = User.FindFirstValue(ClaimTypes.Name);
@@ -451,9 +452,9 @@ namespace MyOnlineShop.Controllers
 				{
 					if (productPrice == null)
 					{
-                        Logger.LoggerFunc($"prices/{id:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                                id, NotFound());
-                        return NotFound(); 
+						Logger.LoggerFunc($"prices/{id:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+								id, NotFound());
+						return NotFound();
 					}
 					var seller = _context.sellers.SingleOrDefault(s => s.UserId == userId);
 					var checkseller = _context.productPrices.SingleOrDefault(p => p.ID == id && p.SellerID == seller.ID);
@@ -490,16 +491,16 @@ namespace MyOnlineShop.Controllers
 
 						};
 
-                        Logger.LoggerFunc($"prices/{id:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                                id, priceModel);
+						Logger.LoggerFunc($"prices/{id:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+								id, priceModel);
 						return Ok(priceModel);
 					}
 
 					else
 					{
-                        Logger.LoggerFunc($"prices/{id:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                                id, Forbid());
-                        return Forbid();
+						Logger.LoggerFunc($"prices/{id:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+								id, Forbid());
+						return Forbid();
 					}
 
 				}
@@ -534,23 +535,23 @@ namespace MyOnlineShop.Controllers
 							Seller = s
 
 						};
-                        Logger.LoggerFunc($"prices/{id:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                                id, priceModel);
-                        return Ok(priceModel);
+						Logger.LoggerFunc($"prices/{id:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+								id, priceModel);
+						return Ok(priceModel);
 					}
 					else
 					{
-                        Logger.LoggerFunc($"prices/{id:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                                id, Unauthorized());
-                        return Unauthorized();
+						Logger.LoggerFunc($"prices/{id:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+								id, Unauthorized());
+						return Unauthorized();
 					}
 				}
 			}
-			catch 
+			catch
 			{
-                Logger.LoggerFunc($"prices/{id:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                                id, StatusCode(StatusCodes.Status500InternalServerError));
-                return StatusCode(StatusCodes.Status500InternalServerError);
+				Logger.LoggerFunc($"prices/{id:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+								id, StatusCode(StatusCodes.Status500InternalServerError));
+				return StatusCode(StatusCodes.Status500InternalServerError);
 			}
 		}
 	}

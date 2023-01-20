@@ -1,12 +1,5 @@
 ﻿namespace MyOnlineShop.Models.apimodel
 {
-	public class usersModel
-	{
-		public int usersPerPage { get; set; }
-		public int page { get; set; }
-		public List<userModel> users { get; set; }
-
-	}
 	public class userModel
 	{
 		public Guid id { get; set; }
@@ -33,16 +26,6 @@
 		public bool restricted { get; set; }
 	}
 
-	public class tokensModel
-	{
-		public int tokensPerPage { get; set; }
-		public int page { get; set; }
-		public List<DiscountToken> tokens { get; set; }
-
-	}
-
-
-
 	public class tokenreqModel
 	{
 		public DateTime ExpirationDate { get; set; }
@@ -51,8 +34,4 @@
 
 
 	}
-
-
-
 }
-

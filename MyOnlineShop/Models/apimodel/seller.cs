@@ -1,12 +1,5 @@
 ﻿namespace MyOnlineShop.Models.apimodel
 {
-	public class SellersSchema
-	{
-		public int sellersPerPage { get; set; }
-		public int page { get; set; }
-		public List<SellerSchema> sellers { get; set; }
-
-	}
 	public class SellerSchema
 	{
 		public Guid id { get; set; }

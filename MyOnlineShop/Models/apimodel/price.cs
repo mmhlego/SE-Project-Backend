@@ -1,12 +1,5 @@
 ﻿namespace MyOnlineShop.Models.apimodel
 {
-	public class ProductPrices
-	{
-
-		public int pricePerPage { get; set; }
-		public int page { get; set; }
-		public List<priceModel> prices { get; set; }
-	}
 	public class PostPrice
 	{
 

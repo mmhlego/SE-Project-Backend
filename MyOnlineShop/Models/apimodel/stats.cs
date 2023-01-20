@@ -1,12 +1,5 @@
 namespace MyOnlineShop.Models.apimodel
 {
-	public class statsModel
-	{
-		public int allstatsPerPage { get; set; }
-		public int page { get; set; }
-		public List<statModel> stats { get; set; }
-
-	}
 
 	public class statsReqModel
 	{

@@ -23,15 +23,15 @@ namespace MyOnlineShop.Controllers
 
 		[HttpGet]
 		[Route("Customers")]
-		public ActionResult<IEnumerable<customersModel>> CustomersGet([FromQuery] int Page, [FromQuery] int CustomersPerPage)
+		public ActionResult<IEnumerable<Pagination<customerModel>>> CustomersGet([FromQuery] int Page, [FromQuery] int CustomersPerPage)
 		{
 			try
 			{
-				var customers = new customersModel
+				var customers = new Pagination<customerModel>
 				{
 					page = Page,
-					customersPerPage = CustomersPerPage,
-					customers = _context.customer
+					perPage = CustomersPerPage,
+					data = _context.customer
 							.Skip((Page - 1) * CustomersPerPage)
 							.Take(CustomersPerPage).Select(u => new customerModel
 							{
@@ -145,9 +145,9 @@ namespace MyOnlineShop.Controllers
 
 				if (cc == null)
 				{
-                    Logger.LoggerFunc($"Customers/{id}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                            custupdate, StatusCode(StatusCodes.Status404NotFound));
-                    return StatusCode(StatusCodes.Status404NotFound);
+					Logger.LoggerFunc($"Customers/{id}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+							custupdate, StatusCode(StatusCodes.Status404NotFound));
+					return StatusCode(StatusCodes.Status404NotFound);
 				}
 				else
 				{
@@ -172,16 +172,16 @@ namespace MyOnlineShop.Controllers
 						balance = cc.Balance
 					};
 					Logger.LoggerFunc($"Customers/{id}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                            custupdate, schema); 
+							custupdate, schema);
 					return Ok(schema);
 
 				}
 			}
 			catch
 			{
-                Logger.LoggerFunc($"Customers/{id}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                            custupdate, StatusCode(StatusCodes.Status500InternalServerError));
-                return StatusCode(StatusCodes.Status500InternalServerError);
+				Logger.LoggerFunc($"Customers/{id}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+							custupdate, StatusCode(StatusCodes.Status500InternalServerError));
+				return StatusCode(StatusCodes.Status500InternalServerError);
 			}
 		}
 

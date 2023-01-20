@@ -91,11 +91,11 @@ namespace MyOnlineShop.Controllers
 				{
 					return StatusCode(StatusCodes.Status400BadRequest);
 				}
-				SellersSchema s = new SellersSchema()
+				var s = new Pagination<SellerSchema>()
 				{
-					sellersPerPage = SellersPerPage,
+					perPage = SellersPerPage,
 					page = page,
-					sellers = sellerSchema
+					data = sellerSchema
 
 				};
 
@@ -187,9 +187,9 @@ namespace MyOnlineShop.Controllers
 
 				if (ss == null)
 				{
-                    Logger.LoggerFunc($"sellers/{sellerId:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                                s, StatusCode(StatusCodes.Status404NotFound));
-                    return StatusCode(StatusCodes.Status404NotFound);
+					Logger.LoggerFunc($"sellers/{sellerId:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+								s, StatusCode(StatusCodes.Status404NotFound));
+					return StatusCode(StatusCodes.Status404NotFound);
 				}
 				else
 				{
@@ -212,19 +212,19 @@ namespace MyOnlineShop.Controllers
 				}
 				if (!ModelState.IsValid)
 				{
-                    Logger.LoggerFunc($"sellers/{sellerId:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                                s, StatusCode(StatusCodes.Status400BadRequest));
-                    return StatusCode(StatusCodes.Status400BadRequest);
+					Logger.LoggerFunc($"sellers/{sellerId:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+								s, StatusCode(StatusCodes.Status400BadRequest));
+					return StatusCode(StatusCodes.Status400BadRequest);
 				}
-                Logger.LoggerFunc($"sellers/{sellerId:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                                s, schema);
-                return Ok(schema);
+				Logger.LoggerFunc($"sellers/{sellerId:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+								s, schema);
+				return Ok(schema);
 			}
 			catch
 			{
-                Logger.LoggerFunc($"sellers/{sellerId:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                                s, StatusCode(StatusCodes.Status500InternalServerError));
-                return StatusCode(StatusCodes.Status500InternalServerError);
+				Logger.LoggerFunc($"sellers/{sellerId:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+								s, StatusCode(StatusCodes.Status500InternalServerError));
+				return StatusCode(StatusCodes.Status500InternalServerError);
 			}
 		}
 
@@ -232,7 +232,7 @@ namespace MyOnlineShop.Controllers
 
 		[HttpGet]
 		[Route("sellers/{id}/stats")]
-		public ActionResult<IEnumerable<statsModel>> SelleresStatsId(Guid id, statsReqModel s, [FromQuery] int page, [FromQuery] int statsPerPage)
+		public ActionResult<IEnumerable<Pagination<statModel>>> SelleresStatsId(Guid id, statsReqModel s, [FromQuery] int page, [FromQuery] int statsPerPage)
 		{
 
 			try
@@ -293,11 +293,11 @@ namespace MyOnlineShop.Controllers
 					};
 					lastList.Add(stForAdd);
 				}
-				var toshow = new statsModel()
+				var toshow = new Pagination<statModel>()
 				{
 					page = page,
-					allstatsPerPage = statsPerPage,
-					stats = lastList
+					perPage = statsPerPage,
+					data = lastList
 				};
 				return Ok(toshow);
 			}
@@ -328,9 +328,9 @@ namespace MyOnlineShop.Controllers
 
 				if (ss == null)
 				{
-                    Logger.LoggerFunc($"Sellers/{id}/likes", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                                like, StatusCode(StatusCodes.Status404NotFound));
-                    return StatusCode(StatusCodes.Status404NotFound);
+					Logger.LoggerFunc($"Sellers/{id}/likes", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+								like, StatusCode(StatusCodes.Status404NotFound));
+					return StatusCode(StatusCodes.Status404NotFound);
 				}
 				else
 				{
@@ -352,9 +352,9 @@ namespace MyOnlineShop.Controllers
 							likes = ss.likes,
 							restricted = user.Restricted
 						};
-                        Logger.LoggerFunc($"Sellers/{id}/likes", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                                like, seller);
-                        return Ok(seller);
+						Logger.LoggerFunc($"Sellers/{id}/likes", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+								like, seller);
+						return Ok(seller);
 					}
 					else
 					{
@@ -372,17 +372,17 @@ namespace MyOnlineShop.Controllers
 							likes = ss.likes,
 							restricted = user.Restricted
 						};
-                        Logger.LoggerFunc($"Sellers/{id}/likes", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                                like, seller);
-                        return Ok(seller);
+						Logger.LoggerFunc($"Sellers/{id}/likes", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+								like, seller);
+						return Ok(seller);
 					}
 				}
 			}
 			catch
 			{
-                Logger.LoggerFunc($"Sellers/{id}/likes", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                                like, StatusCode(StatusCodes.Status500InternalServerError));
-                return StatusCode(StatusCodes.Status500InternalServerError);
+				Logger.LoggerFunc($"Sellers/{id}/likes", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+								like, StatusCode(StatusCodes.Status500InternalServerError));
+				return StatusCode(StatusCodes.Status500InternalServerError);
 			}
 		}
 	}
