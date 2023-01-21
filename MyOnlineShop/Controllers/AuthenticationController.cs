@@ -24,22 +24,22 @@ namespace MyOnlineShop.Controllers
 		{
 			if (!ModelState.IsValid)
 			{
-                Logger.LoggerFunc("auth/login", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                        loginModel, BadRequest(ModelState));
-                return BadRequest(ModelState);
+				Logger.LoggerFunc("auth/login", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+						loginModel, BadRequest(ModelState));
+				return BadRequest(ModelState);
 			}
 			var user = _context.users.FirstOrDefault(u => u.UserName == loginModel.username && u.Password == loginModel.password);
 			if (user == null)
 			{
-                Logger.LoggerFunc("auth/login", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                        loginModel, new Dictionary<string, string>() { { "status", "Failed" } });
-                return Ok(new Dictionary<string, string>() { { "status", "Failed" } });
+				Logger.LoggerFunc("auth/login", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+						loginModel, new Dictionary<string, string>() { { "status", "Failed" } });
+				return Ok(new Dictionary<string, string>() { { "status", "Failed" } });
 			}
 			else if (user.Restricted)
 			{
-                Logger.LoggerFunc("auth/login", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                        loginModel, new Dictionary<string, string>() { { "status", "Restricted" } });
-                return Ok(new Dictionary<string, string>() { { "status", "Restricted" } });
+				Logger.LoggerFunc("auth/login", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+						loginModel, new Dictionary<string, string>() { { "status", "Restricted" } });
+				return Ok(new Dictionary<string, string>() { { "status", "Restricted" } });
 			}
 			else
 			{
@@ -56,9 +56,9 @@ namespace MyOnlineShop.Controllers
 				var principal = new ClaimsPrincipal(identity);
 				HttpContext.SignInAsync(principal);
 
-                Logger.LoggerFunc("auth/login", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                        loginModel, new Dictionary<string, string>() { { "status", "Success" } });
-                return Ok(new Dictionary<string, string>() { { "status", "Success" } });
+				//Logger.LoggerFunc("auth/login",
+				//_context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, new Dictionary<string, string>() { { "status", "Success" } });
+				return Ok(new Dictionary<string, string>() { { "status", "Success" } });
 			}
 		}
 
@@ -70,9 +70,9 @@ namespace MyOnlineShop.Controllers
 			{
 				if (!ModelState.IsValid)
 				{
-                    Logger.LoggerFunc("auth/register", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                        registerModel, StatusCode(StatusCodes.Status400BadRequest));
-                    return StatusCode(StatusCodes.Status400BadRequest);
+					Logger.LoggerFunc("auth/register", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+						registerModel, StatusCode(StatusCodes.Status400BadRequest));
+					return StatusCode(StatusCodes.Status400BadRequest);
 				}
 				var status = new Dictionary<string, string>();
 				var username = _context.users.SingleOrDefault(u => u.UserName == registerModel.username);
@@ -119,15 +119,15 @@ namespace MyOnlineShop.Controllers
 					}
 					status = new Dictionary<string, string>() { { "status", "Success" } };
 				}
-                Logger.LoggerFunc("auth/register", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                        registerModel, status);
-                return Ok(status);
+				Logger.LoggerFunc("auth/register", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+						registerModel, status);
+				return Ok(status);
 			}
 			catch
 			{
-                Logger.LoggerFunc("auth/register", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                        registerModel, StatusCode(StatusCodes.Status500InternalServerError));
-                return StatusCode(StatusCodes.Status500InternalServerError);
+				Logger.LoggerFunc("auth/register", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+						registerModel, StatusCode(StatusCodes.Status500InternalServerError));
+				return StatusCode(StatusCodes.Status500InternalServerError);
 			}
 		}
 		public void verificationCodeIn(string name)
@@ -147,7 +147,7 @@ namespace MyOnlineShop.Controllers
 
 		[HttpGet]
 		[Route("auth/verify")]
-		public ActionResult<IEnumerable<userModel>> verify(Guid VerificationCode)
+		public ActionResult verify(Guid VerificationCode)
 		{
 			try
 			{
