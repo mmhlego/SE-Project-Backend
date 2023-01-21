@@ -28,8 +28,9 @@ namespace MyOnlineShop.Data
 		public DbSet<Stats> stats { get; set; }
 		public DbSet<Verification> verification { get; set; }
 
+        public DbSet<posters> posters { get; set; }
 
-		protected override void OnModelCreating(ModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
 
 			base.OnModelCreating(modelBuilder);
