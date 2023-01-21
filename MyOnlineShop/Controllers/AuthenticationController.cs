@@ -56,8 +56,8 @@ namespace MyOnlineShop.Controllers
 				var principal = new ClaimsPrincipal(identity);
 				HttpContext.SignInAsync(principal);
 
-				//Logger.LoggerFunc("auth/login",
-				//_context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID, new Dictionary<string, string>() { { "status", "Success" } });
+				// Logger.LoggerFunc("auth/login", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+				//		loginModel, new Dictionary<string, string>() { { "status", "Success" } });
 				return Ok(new Dictionary<string, string>() { { "status", "Success" } });
 			}
 		}
@@ -180,6 +180,30 @@ namespace MyOnlineShop.Controllers
 			{
 				return StatusCode(StatusCodes.Status500InternalServerError);
 			}
+		}
+
+
+		[HttpGet]
+		[Route("auth/logout")]
+		public IActionResult Logout()
+		{
+			var status = new Dictionary<string, string>();
+			try
+			{
+
+				HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+				status = new Dictionary<string, string>() { { "status", "Success" } };
+				return Ok(status);
+			}
+			catch
+			{
+
+				status = new Dictionary<string, string>() { { "status", "Failed" } };
+				return Ok(status);
+			}
+
+
+
 		}
 	}
 }
