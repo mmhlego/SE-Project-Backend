@@ -161,9 +161,10 @@ namespace MyOnlineShop.Controllers
 		[Authorize]
 		public IActionResult removeComment(Guid id)
 		{
+            Logger logger = new Logger(_context);
 
-			//Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier).ToString());
-			string username = User.FindFirstValue(ClaimTypes.Name);
+            //Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier).ToString());
+            string username = User.FindFirstValue(ClaimTypes.Name);
 			var comment1 = _context.comment.ToList();
 			Comment comment = null;
 			int i = 0;
@@ -186,8 +187,8 @@ namespace MyOnlineShop.Controllers
 				{
 					if (comment == null)
 					{
-						Logger.LoggerFunc($"comments/{id:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-							id, StatusCode(StatusCodes.Status404NotFound));
+						logger.LoggerFunc($"comments/{id:Guid}", 
+							id, StatusCode(StatusCodes.Status404NotFound), User);
 						return StatusCode(StatusCodes.Status404NotFound);
 					}
 					else
@@ -205,23 +206,23 @@ namespace MyOnlineShop.Controllers
 						};
 						_context.comment.Remove(comment);
 						_context.SaveChanges();
-						Logger.LoggerFunc($"comments/{id:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-							id, temp);
+						logger.LoggerFunc($"comments/{id:Guid}", 
+							id, temp, User);
 						return Ok(temp);
 					}
 				}
 				else
 				{
-					Logger.LoggerFunc($"comments/{id:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-							id, StatusCode(StatusCodes.Status403Forbidden));
+					logger.LoggerFunc($"comments/{id:Guid}", 
+							id, StatusCode(StatusCodes.Status403Forbidden), User);
 					return StatusCode(StatusCodes.Status403Forbidden);
 				}
 
 			}
 			else
 			{
-				Logger.LoggerFunc($"comments/{id:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-							id, StatusCode(StatusCodes.Status401Unauthorized));
+				logger.LoggerFunc($"comments/{id:Guid}", 
+							id, StatusCode(StatusCodes.Status401Unauthorized), User);
 				return StatusCode(StatusCodes.Status401Unauthorized);
 
 			}
@@ -233,16 +234,17 @@ namespace MyOnlineShop.Controllers
 		[Route("comments/")]
 		public IActionResult getAllComments([FromBody] Models.apimodel.postComment commentModel)
 		{
+            Logger logger = new Logger(_context);
 
-			try
-			{
+            try
+            {
 
 				//Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier).ToString());
 				string username = User.FindFirstValue(ClaimTypes.Name);
 				if (!ModelState.IsValid)
 				{
-					Logger.LoggerFunc("comments", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-							commentModel, BadRequest(ModelState));
+					logger.LoggerFunc("comments", 
+							commentModel, BadRequest(ModelState), User);
 					return BadRequest(ModelState);
 				}
 				if (username != null)
@@ -279,15 +281,15 @@ namespace MyOnlineShop.Controllers
 						SendDate = commentToAdd.SentDate,
 						Text = commentToAdd.Text
 					};
-					Logger.LoggerFunc("comments", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-							commentModel, allComments);
+					logger.LoggerFunc("comments", 
+							commentModel, allComments, User);
 					return Ok(allComments);
 
 				}
 				else
 				{
-					Logger.LoggerFunc("comments", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-							commentModel, StatusCode(StatusCodes.Status401Unauthorized));
+					logger.LoggerFunc("comments", 
+							commentModel, StatusCode(StatusCodes.Status401Unauthorized), User);
 					return StatusCode(StatusCodes.Status401Unauthorized);
 				}
 
@@ -295,8 +297,8 @@ namespace MyOnlineShop.Controllers
 
 			catch
 			{
-				Logger.LoggerFunc("comments", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-							commentModel, StatusCode(StatusCodes.Status500InternalServerError));
+				logger.LoggerFunc("comments", 
+							commentModel, StatusCode(StatusCodes.Status500InternalServerError), User);
 				return StatusCode(StatusCodes.Status500InternalServerError);
 			}
 
@@ -309,12 +311,14 @@ namespace MyOnlineShop.Controllers
 		[Authorize]
 		public IActionResult putComment(Guid id, [FromBody] likeModel l)
 		{
-			try
-			{
+            Logger logger = new Logger(_context);
+
+            try
+            {
 				if (!ModelState.IsValid)
 				{
-					Logger.LoggerFunc($"comments/{id:Guid}/likes", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-							l, BadRequest(ModelState));
+					logger.LoggerFunc($"comments/{id:Guid}/likes", 
+							l, BadRequest(ModelState), User);
 					return BadRequest(ModelState);
 				}
 				string username = User.FindFirstValue(ClaimTypes.Name);
@@ -337,8 +341,8 @@ namespace MyOnlineShop.Controllers
 
 						if (comment == null)
 						{
-							Logger.LoggerFunc($"comments/{id:Guid}/likes", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-							l, StatusCode(StatusCodes.Status404NotFound));
+							logger.LoggerFunc($"comments/{id:Guid}/likes", 
+								l, StatusCode(StatusCodes.Status404NotFound), User);
 							return StatusCode(StatusCodes.Status404NotFound);
 						}
 
@@ -370,25 +374,31 @@ namespace MyOnlineShop.Controllers
 								Text = comment.Text
 							};
 
-							// Logger.LoggerFunc($"comments/{id:Guid}/likes", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-							//	l, CommentForShow);
+							logger.LoggerFunc($"comments/{id:Guid}/likes", 
+								l, CommentForShow, User);
 							return Ok(CommentForShow);
 						}
 					}
 					else
 					{
-						return StatusCode(StatusCodes.Status403Forbidden);
+                        logger.LoggerFunc($"comments/{id:Guid}/likes",
+                                l, StatusCode(StatusCodes.Status403Forbidden), User);
+                        return StatusCode(StatusCodes.Status403Forbidden);
 					}
 				}
 
 				else
 				{
-					return StatusCode(StatusCodes.Status401Unauthorized);
+                    logger.LoggerFunc($"comments/{id:Guid}/likes",
+                                l, StatusCode(StatusCodes.Status401Unauthorized), User);
+                    return StatusCode(StatusCodes.Status401Unauthorized);
 				}
 			}
 			catch
 			{
-				return StatusCode(StatusCodes.Status500InternalServerError);
+                logger.LoggerFunc($"comments/{id:Guid}/likes",
+                                l, StatusCode(StatusCodes.Status500InternalServerError), User);
+                return StatusCode(StatusCodes.Status500InternalServerError);
 			}
 		}
 	}

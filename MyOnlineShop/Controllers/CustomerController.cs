@@ -137,6 +137,7 @@ namespace MyOnlineShop.Controllers
         [Route("Customers/{id}")]
         public ActionResult<IEnumerable<customerModel>> EachCustomerPut(Guid id, [FromQuery] customerreqModel custupdate)
         {
+            Logger logger = new Logger(_context);
             try
             {
                 var c1 = _context.customer.ToList();
@@ -153,8 +154,8 @@ namespace MyOnlineShop.Controllers
 
                 if (cc == null)
                 {
-                    Logger.LoggerFunc($"Customers/{id}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                            custupdate, StatusCode(StatusCodes.Status404NotFound));
+                    logger.LoggerFunc($"Customers/{id}", 
+                            custupdate, StatusCode(StatusCodes.Status404NotFound), User);
                     return StatusCode(StatusCodes.Status404NotFound);
                 }
                 else
@@ -179,16 +180,16 @@ namespace MyOnlineShop.Controllers
                         address = cc.Address,
                         balance = cc.Balance
                     };
-                    Logger.LoggerFunc($"Customers/{id}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                            custupdate, schema);
+                    logger.LoggerFunc($"Customers/{id}", 
+                            custupdate, schema, User);
                     return Ok(schema);
 
                 }
             }
             catch
             {
-                Logger.LoggerFunc($"Customers/{id}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                            custupdate, StatusCode(StatusCodes.Status500InternalServerError));
+                logger.LoggerFunc($"Customers/{id}", 
+                            custupdate, StatusCode(StatusCodes.Status500InternalServerError), User);
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }

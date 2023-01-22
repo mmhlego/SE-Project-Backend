@@ -3,9 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyOnlineShop.Data;
 using MyOnlineShop.Models;
+using MyOnlineShop.Services;
 using MyOnlineShop.Models.apimodel;
 using System.Security.Claims;
 using posters = MyOnlineShop.Models.posters;
+using Microsoft.Extensions.Hosting;
 
 namespace MyOnlineShop.Controllers
 {
@@ -68,13 +70,15 @@ namespace MyOnlineShop.Controllers
         [Route("posters/")]
         public IActionResult postPoster([FromBody] Models.apimodel.postPosters post)
         {
-
+            Logger logger = new Logger(_context);
             try
             {
 
                 string username = User.FindFirstValue(ClaimTypes.Name);
                 if (!ModelState.IsValid)
                 {
+                    logger.LoggerFunc("posters/",
+                                post, BadRequest(ModelState), User);
                     return BadRequest(ModelState);
                 }
                 if (username != null)
@@ -99,12 +103,16 @@ namespace MyOnlineShop.Controllers
                         id = postersToAdd.id,
                         title = postersToAdd.title,
                         imageUrl = postersToAdd.imageUrl
-                    };                    
+                    };
+                    logger.LoggerFunc("posters/",
+                                post, poster, User);
                     return Ok(poster);
 
                 }
                 else
                 {
+                    logger.LoggerFunc("posters/",
+                                post, StatusCode(StatusCodes.Status401Unauthorized), User);
                     return StatusCode(StatusCodes.Status401Unauthorized);
                 }
 
@@ -112,6 +120,7 @@ namespace MyOnlineShop.Controllers
 
             catch
             {
+                logger.LoggerFunc("posters/", post, StatusCode(StatusCodes.Status500InternalServerError), User);
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
 
@@ -123,7 +132,7 @@ namespace MyOnlineShop.Controllers
         [Route("posters/{id:Guid}")]
         public IActionResult removePoster(Guid id)
         {
-
+            Logger logger = new Logger(_context);
             string username = User.FindFirstValue(ClaimTypes.Name);
             var poster1 = _context.posters.ToList();
             posters poster = null;
@@ -145,7 +154,9 @@ namespace MyOnlineShop.Controllers
                 if (accesslevel == "admin")
                 {
                     if (poster == null)
-                    {                    
+                    {
+                        logger.LoggerFunc($"posters/{id:Guid}",
+                                id, StatusCode(StatusCodes.Status404NotFound), User);
                         return StatusCode(StatusCodes.Status404NotFound);
                     }
                     else
@@ -158,18 +169,23 @@ namespace MyOnlineShop.Controllers
                         };
                         _context.posters.Remove(poster);
                         _context.SaveChanges();
-                        
+                        logger.LoggerFunc($"posters/{id:Guid}",
+                                id, temp, User);
                         return Ok(temp);
                     }
                 }
                 else
-                {                    
+                {
+                    logger.LoggerFunc($"posters/{id:Guid}",
+                                id, StatusCode(StatusCodes.Status403Forbidden), User);
                     return StatusCode(StatusCodes.Status403Forbidden);
                 }
 
             }
             else
-            {              
+            {
+                logger.LoggerFunc($"posters/{id:Guid}",
+                                id, StatusCode(StatusCodes.Status401Unauthorized), User);
                 return StatusCode(StatusCodes.Status401Unauthorized);
 
             }

@@ -64,16 +64,20 @@ namespace MyOnlineShop.Controllers
         public ActionResult discountTokenPost(Guid id, Guid cartId)
         {
 
-
+            Logger logger = new Logger(_context);
             var username = User.FindFirstValue(ClaimTypes.Name);
             if (username == null)
             {
+                logger.LoggerFunc($"discountTokens/{id}/use",
+                                cartId, Unauthorized(), User);
                 return Unauthorized();
             }
             var userId = _context.users.SingleOrDefault(u => u.UserName == username).ID;
             var customer = _context.customer.SingleOrDefault(c => c.UserId == userId);
             if (customer == null)
             {
+                logger.LoggerFunc($"discountTokens/{id}/use",
+                                cartId, Forbid(), User);
                 return Forbid();
             }
             Cart cart = new Cart();
@@ -91,10 +95,14 @@ namespace MyOnlineShop.Controllers
 
             if (cart == null)
             {
+                logger.LoggerFunc($"discountTokens/{id}/use",
+                                cartId, NotFound(), User);
                 return NotFound();
             }
             if (cart.TotalPrice == 0)
             {
+                logger.LoggerFunc($"discountTokens/{id}/use",
+                                cartId, BadRequest(), User);
                 return BadRequest();
             }
 
@@ -149,7 +157,8 @@ namespace MyOnlineShop.Controllers
                 status = status,
                 cart = eachCart
             };
-            // Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Put", "DiscountToken_Put_by_ID & use");
+            logger.LoggerFunc($"discountTokens/{id}/use",
+                                cartId, t1, User);
             return Ok(t1);
 
 

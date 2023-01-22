@@ -5,6 +5,7 @@ using System.Data;
 using MyOnlineShop.Data;
 using MyOnlineShop.Services;
 using System.Security.Claims;
+using Microsoft.Extensions.Logging;
 
 namespace MyOnlineShop.Controllers
 {
@@ -12,15 +13,19 @@ namespace MyOnlineShop.Controllers
     {
         private readonly MyShopContext _context;
 
+
         public AdminController(MyShopContext context)
         {
             _context = context;
         }
+        
+
 
         [HttpGet]
         [Route("admin/users")]
         public ActionResult<IEnumerable<Pagination<userModel>>> userssget([FromQuery] int page, [FromQuery] int usersPerPage)
         {
+            
             try
             {
                 string username = User.FindFirstValue(ClaimTypes.Name);
@@ -135,14 +140,15 @@ namespace MyOnlineShop.Controllers
         [Route("admin/users/{id}")]
         public ActionResult userput(Guid id, [FromBody] userreqModel req)
         {
+            Logger logger = new Logger(_context);
             try
             {
                 string accessLevel = User.FindFirstValue(ClaimTypes.Role).ToLower();
                 if (accessLevel == null)
                 {
-                    Logger.LoggerFunc($"admin/users/{id}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                        req, Unauthorized());
-                    return Unauthorized();
+                    var response = Unauthorized();
+                    logger.LoggerFunc($"admin/users/{id}", req, response, User);
+                    return response;
                 }
                 if (accessLevel == "admin")
                 {
@@ -150,8 +156,8 @@ namespace MyOnlineShop.Controllers
 
                     if (userId == null)
                     {
-                        Logger.LoggerFunc($"admin/users/{id}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                        req, StatusCode(StatusCodes.Status404NotFound));
+                        logger.LoggerFunc($"admin/users/{id}", 
+                        req, StatusCode(StatusCodes.Status404NotFound), User);
                         return StatusCode(StatusCodes.Status404NotFound);
                     }
                     else
@@ -189,29 +195,29 @@ namespace MyOnlineShop.Controllers
                             username = userId.UserName,
                             isApproved = userId.IsApproved
                         };
-                        Logger.LoggerFunc($"admin/users/{id}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                            req, u);
+                        logger.LoggerFunc($"admin/users/{id}", 
+                            req, u, User);
                         return Ok(u);
                     }
 
                     if (!ModelState.IsValid)
                     {
-                        Logger.LoggerFunc($"admin/users/{id}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                            req, StatusCode(StatusCodes.Status400BadRequest));
+                        logger.LoggerFunc($"admin/users/{id}", 
+                            req, StatusCode(StatusCodes.Status400BadRequest), User);
                         return StatusCode(StatusCodes.Status400BadRequest);
                     }
                 }
                 else
                 {
-                    Logger.LoggerFunc($"admin/users/{id}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                            req, StatusCode(StatusCodes.Status403Forbidden));
+                    logger.LoggerFunc($"admin/users/{id}", 
+                            req, StatusCode(StatusCodes.Status403Forbidden), User);
                     return StatusCode(StatusCodes.Status403Forbidden);
                 }
             }
             catch
             {
-                Logger.LoggerFunc($"admin/users/{id}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                            req, StatusCode(StatusCodes.Status500InternalServerError));
+                logger.LoggerFunc($"admin/users/{id}", 
+                            req, StatusCode(StatusCodes.Status500InternalServerError), User);
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
@@ -223,13 +229,14 @@ namespace MyOnlineShop.Controllers
         [Route("admin/users/{id}")]
         public ActionResult userdelete(Guid id)
         {
+            Logger logger = new Logger(_context);
             try
             {
                 string accessLevel = User.FindFirstValue(ClaimTypes.Role).ToLower();
                 if (accessLevel == null)
                 {
-                    Logger.LoggerFunc($"admin/users/{id}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                        id, Unauthorized());
+                    logger.LoggerFunc($"admin/users/{id}", 
+                        id, Unauthorized(), User);
                     return Unauthorized();
                 }
                 if (accessLevel == "admin")
@@ -239,8 +246,8 @@ namespace MyOnlineShop.Controllers
                     bool restricted = true;
                     if (userId == null)
                     {
-                        Logger.LoggerFunc($"admin/users/{id}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                        id, StatusCode(StatusCodes.Status404NotFound));
+                        logger.LoggerFunc($"admin/users/{id}", 
+                        id, StatusCode(StatusCodes.Status404NotFound), User);
                         return StatusCode(StatusCodes.Status404NotFound);
                     }
                     else
@@ -273,22 +280,22 @@ namespace MyOnlineShop.Controllers
                             username = userId.UserName,
                             isApproved = userId.IsApproved
                         };
-                        Logger.LoggerFunc($"admin/users/{id}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                            id, u);
+                        logger.LoggerFunc($"admin/users/{id}", 
+                            id, u, User);
                         return Ok(u);
                     }
                 }
                 else
                 {
-                    Logger.LoggerFunc($"admin/users/{id}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                            id, StatusCode(StatusCodes.Status403Forbidden));
+                    logger.LoggerFunc($"admin/users/{id}", 
+                            id, StatusCode(StatusCodes.Status403Forbidden), User);
                     return StatusCode(StatusCodes.Status403Forbidden);
                 }
             }
             catch
             {
-                Logger.LoggerFunc($"admin/users/{id}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                            id, StatusCode(StatusCodes.Status500InternalServerError));
+                logger.LoggerFunc($"admin/users/{id}", 
+                            id, StatusCode(StatusCodes.Status500InternalServerError), User);
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
@@ -381,13 +388,15 @@ namespace MyOnlineShop.Controllers
         [Route("admin/discountTokens")]
         public ActionResult discountTokenspost([FromBody] tokenresmodel tokenputter)
         {
+            Logger logger = new Logger(_context);
+
             try
             {
                 string accessLevel = User.FindFirstValue(ClaimTypes.Role).ToLower();
                 if (accessLevel == null)
                 {
-                    Logger.LoggerFunc("admin/discountTokens", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                        tokenputter, Unauthorized());
+                    logger.LoggerFunc("admin/discountTokens", 
+                        tokenputter, Unauthorized(), User);
                     return Unauthorized();
                 }
                 if (accessLevel == "admin")
@@ -410,28 +419,28 @@ namespace MyOnlineShop.Controllers
                         isEvent = tokenput.IsEvent,
                         expirationDate = tokenput.ExpirationDate
                     };
-                    Logger.LoggerFunc("admin/discountTokens", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                        tokenputter, t);
+                    logger.LoggerFunc("admin/discountTokens", 
+                        tokenputter, t, User);
                     return Ok(t);
 
                     if (!ModelState.IsValid)
                     {
-                        Logger.LoggerFunc("admin/discountTokens", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                            tokenputter, StatusCode(StatusCodes.Status400BadRequest));
+                        logger.LoggerFunc("admin/discountTokens", 
+                            tokenputter, StatusCode(StatusCodes.Status400BadRequest), User);
                         return StatusCode(StatusCodes.Status400BadRequest);
                     }
                 }
                 else
                 {
-                    Logger.LoggerFunc("admin/discountTokens", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                        tokenputter, StatusCode(StatusCodes.Status403Forbidden));
+                    logger.LoggerFunc("admin/discountTokens", 
+                        tokenputter, StatusCode(StatusCodes.Status403Forbidden), User);
                     return StatusCode(StatusCodes.Status403Forbidden);
                 }
             }
             catch
             {
-                Logger.LoggerFunc("admin/discountTokens", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                        tokenputter, StatusCode(StatusCodes.Status500InternalServerError));
+                logger.LoggerFunc("admin/discountTokens", 
+                        tokenputter, StatusCode(StatusCodes.Status500InternalServerError), User);
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
@@ -443,13 +452,15 @@ namespace MyOnlineShop.Controllers
         [Route("admin/discountTokens/{id}")]
         public ActionResult discountTokensdelete(Guid id)
         {
+            Logger logger = new Logger(_context);
+
             try
             {
                 string accessLevel = User.FindFirstValue(ClaimTypes.Role).ToLower();
                 if (accessLevel == null)
                 {
-                    Logger.LoggerFunc($"admin/discountTokens/{id}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                        id, Unauthorized());
+                    logger.LoggerFunc($"admin/discountTokens/{id}", 
+                        id, Unauthorized(), User);
                     return Unauthorized();
                 }
                 if (accessLevel == "admin")
@@ -457,8 +468,8 @@ namespace MyOnlineShop.Controllers
                     var delToken = _context.tokens.SingleOrDefault(p => p.Id == id);
                     if (delToken == null)
                     {
-                        Logger.LoggerFunc($"admin/discountTokens/{id}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                            id, StatusCode(StatusCodes.Status404NotFound));
+                        logger.LoggerFunc($"admin/discountTokens/{id}", 
+                            id, StatusCode(StatusCodes.Status404NotFound), User);
                         return StatusCode(StatusCodes.Status404NotFound);
                     }
                     else
@@ -472,8 +483,8 @@ namespace MyOnlineShop.Controllers
                             isEvent = delToken.IsEvent,
                             expirationDate = delToken.ExpirationDate
                         };
-                        Logger.LoggerFunc($"admin/discountTokens/{id}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                            id, t);
+                        logger.LoggerFunc($"admin/discountTokens/{id}", 
+                            id, t, User);
                         return Ok(t);
 
                     }
@@ -483,15 +494,15 @@ namespace MyOnlineShop.Controllers
                 }
                 else
                 {
-                    Logger.LoggerFunc($"admin/discountTokens/{id}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                        id, StatusCode(StatusCodes.Status403Forbidden));
+                    logger.LoggerFunc($"admin/discountTokens/{id}", 
+                        id, StatusCode(StatusCodes.Status403Forbidden), User);
                     return StatusCode(StatusCodes.Status403Forbidden);
                 }
             }
             catch
             {
-                Logger.LoggerFunc($"admin/discountTokens/{id}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                        id, StatusCode(StatusCodes.Status500InternalServerError));
+                logger.LoggerFunc($"admin/discountTokens/{id}", 
+                        id, StatusCode(StatusCodes.Status500InternalServerError), User);
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
@@ -666,11 +677,14 @@ namespace MyOnlineShop.Controllers
         [Route("admin/carts/{id}")]
         public ActionResult admincartsput(Guid id, string status)
         {
+            Logger logger = new Logger(_context);
             try
             {
                 string accessLevel = User.FindFirstValue(ClaimTypes.Role).ToLower();
                 if (accessLevel == null)
                 {
+                    logger.LoggerFunc($"admin/carts/{id}",
+                        status, Unauthorized(), User);
                     return Unauthorized();
                 }
 
@@ -680,6 +694,8 @@ namespace MyOnlineShop.Controllers
 
                     if (cartId == null)
                     {
+                        logger.LoggerFunc($"admin/carts/{id}",
+                            status, StatusCode(StatusCodes.Status404NotFound), User);
                         return StatusCode(StatusCodes.Status404NotFound);
                     }
                     else
@@ -717,6 +733,8 @@ namespace MyOnlineShop.Controllers
                         }
                         else
                         {
+                            logger.LoggerFunc($"admin/carts/{id}",
+                            status, BadRequest(), User);
                             return BadRequest();
                         }
 
@@ -725,17 +743,22 @@ namespace MyOnlineShop.Controllers
                         _context.Update(cartId);
                         _context.SaveChanges();
                         var s = new Dictionary<string, string>() { { "status", cartId.Status } };
-                        //Logger.LoggerFunc(User.FindFirstValue(ClaimTypes.Name), "Put", "Create_Cart_by_ID");
+                        logger.LoggerFunc($"admin/carts/{id}",
+                            status, s, User);
                         return Ok(s);
                     }
                 }
                 else
                 {
+                    logger.LoggerFunc($"admin/carts/{id}",
+                            status, StatusCode(StatusCodes.Status403Forbidden), User);
                     return StatusCode(StatusCodes.Status403Forbidden);
                 }
             }
             catch
             {
+                logger.LoggerFunc($"admin/carts/{id}",
+                            status, StatusCode(StatusCodes.Status500InternalServerError), User);
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }

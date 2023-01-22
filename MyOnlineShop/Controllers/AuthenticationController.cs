@@ -22,23 +22,23 @@ namespace MyOnlineShop.Controllers
 		[Route("auth/login")]
 		public IActionResult loginmethod([FromBody] LoginModel loginModel)
 		{
+			Logger logger = new Logger(_context);
 			if (!ModelState.IsValid)
 			{
-				Logger.LoggerFunc("auth/login", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-						loginModel, BadRequest(ModelState));
+				logger.LoggerFunc("auth/login", loginModel, BadRequest(ModelState), User);
 				return BadRequest(ModelState);
 			}
 			var user = _context.users.FirstOrDefault(u => u.UserName == loginModel.username && u.Password == loginModel.password);
 			if (user == null)
 			{
-				Logger.LoggerFunc("auth/login", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-						loginModel, new Dictionary<string, string>() { { "status", "Failed" } });
+				logger.LoggerFunc("auth/login", 
+						loginModel, new Dictionary<string, string>() { { "status", "Failed" } }, User);
 				return Ok(new Dictionary<string, string>() { { "status", "Failed" } });
 			}
 			else if (user.Restricted)
 			{
-				Logger.LoggerFunc("auth/login", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-						loginModel, new Dictionary<string, string>() { { "status", "Restricted" } });
+				logger.LoggerFunc("auth/login", 
+						loginModel, new Dictionary<string, string>() { { "status", "Restricted" } }, User);
 				return Ok(new Dictionary<string, string>() { { "status", "Restricted" } });
 			}
 			else
@@ -56,8 +56,8 @@ namespace MyOnlineShop.Controllers
 				var principal = new ClaimsPrincipal(identity);
 				HttpContext.SignInAsync(principal);
 
-				// Logger.LoggerFunc("auth/login", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-				//		loginModel, new Dictionary<string, string>() { { "status", "Success" } });
+				 logger.LoggerFunc("auth/login", 
+						loginModel, new Dictionary<string, string>() { { "status", "Success" } }, User);
 				return Ok(new Dictionary<string, string>() { { "status", "Success" } });
 			}
 		}
@@ -66,12 +66,13 @@ namespace MyOnlineShop.Controllers
 		[Route("auth/register")]
 		public ActionResult registermethod([FromBody] RegisterModel registerModel)
 		{
-			try
+            Logger logger = new Logger(_context);
+            try
 			{
 				if (!ModelState.IsValid)
 				{
-					Logger.LoggerFunc("auth/register", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-						registerModel, StatusCode(StatusCodes.Status400BadRequest));
+					logger.LoggerFunc("auth/register", 
+						registerModel, StatusCode(StatusCodes.Status400BadRequest), User);
 					return StatusCode(StatusCodes.Status400BadRequest);
 				}
 				var status = new Dictionary<string, string>();
@@ -119,14 +120,14 @@ namespace MyOnlineShop.Controllers
 					}
 					status = new Dictionary<string, string>() { { "status", "Success" } };
 				}
-				Logger.LoggerFunc("auth/register", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-						registerModel, status);
+				logger.LoggerFunc("auth/register", 
+						registerModel, status, User);
 				return Ok(status);
 			}
 			catch
 			{
-				Logger.LoggerFunc("auth/register", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-						registerModel, StatusCode(StatusCodes.Status500InternalServerError));
+				logger.LoggerFunc("auth/register", 
+						registerModel, StatusCode(StatusCodes.Status500InternalServerError), User);
 				return StatusCode(StatusCodes.Status500InternalServerError);
 			}
 		}

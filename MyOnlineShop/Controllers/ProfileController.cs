@@ -59,29 +59,30 @@ namespace MyOnlineShop.Controllers
 		[Route("profile/")]
 		public ActionResult putProfile(putprofileModel p)
 		{
-			try
+            Logger logger = new Logger(_context);
+            try
 			{
 				var username = User.FindFirstValue(ClaimTypes.Name);
 				var user = _context.users.SingleOrDefault(s => s.UserName == username);
 
 				if (user == null)
 				{
-					Logger.LoggerFunc("profile/", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								p, Unauthorized());
+					logger.LoggerFunc("profile/", 
+								p, Unauthorized(), User);
 					return Unauthorized();
 				}
 				var emailcheck = _context.users.SingleOrDefault(s => s.Email == p.email && s.UserName != username);
 				var phonecheck = _context.users.SingleOrDefault(s => s.PhoneNumber == p.phoneNumber && s.UserName != username);
 				if (emailcheck != null || phonecheck != null)
 				{
-					Logger.LoggerFunc("profile/", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								p, Forbid());
+					logger.LoggerFunc("profile/", 
+								p, Forbid(), User);
 					return Forbid();
 				}
 				if (!ModelState.IsValid)
 				{
-					Logger.LoggerFunc("profile/", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								p, BadRequest(ModelState));
+					logger.LoggerFunc("profile/", 
+								p, BadRequest(ModelState), User);
 					return BadRequest(ModelState);
 				}
 				else
@@ -107,15 +108,15 @@ namespace MyOnlineShop.Controllers
 						accessLevel = user.AccessLevel,
 						restricted = user.Restricted
 					};
-					Logger.LoggerFunc("profile/", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								p, p1);
+					logger.LoggerFunc("profile/", 
+								p, p1, User);
 					return Ok(p1);
 				}
 			}
 			catch
 			{
-				Logger.LoggerFunc("profile/", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								p, StatusCode(StatusCodes.Status500InternalServerError));
+				logger.LoggerFunc("profile/", 
+								p, StatusCode(StatusCodes.Status500InternalServerError), User);
 				return StatusCode(StatusCodes.Status500InternalServerError);
 			}
 		}
@@ -360,12 +361,13 @@ namespace MyOnlineShop.Controllers
 		[Route("profile/subscribe")]
 		public ActionResult GetProductsubsrib(Guid productId)
 		{
-			try
+            Logger logger = new Logger(_context);
+            try
 			{
 				if (!ModelState.IsValid)
 				{
-					Logger.LoggerFunc("profile/subscribe", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								productId, BadRequest(ModelState));
+					logger.LoggerFunc("profile/subscribe", 
+								productId, BadRequest(ModelState), User);
 					return BadRequest(ModelState);
 				}
 				var username = User.FindFirstValue(ClaimTypes.Name);
@@ -374,26 +376,26 @@ namespace MyOnlineShop.Controllers
 				var checkproduct = _context.Products.SingleOrDefault(p => p.ID == productId);
 				if (productId == null)
 				{
-					Logger.LoggerFunc("profile/subscribe", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								productId, BadRequest());
+					logger.LoggerFunc("profile/subscribe", 
+								productId, BadRequest(), User);
 					return BadRequest();
 				}
 				if (username == null)
 				{
-					Logger.LoggerFunc("profile/subscribe", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								productId, Unauthorized());
+					logger.LoggerFunc("profile/subscribe", 
+								productId, Unauthorized(), User);
 					return Unauthorized();
 				}
 				if (user.AccessLevel.ToLower() != "customer")
 				{
-					Logger.LoggerFunc("profile/subscribe", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								productId, Forbid());
+					logger.LoggerFunc("profile/subscribe", 
+								productId, Forbid(), User);
 					return Forbid();
 				}
 				if (checkproduct == null)
 				{
-					Logger.LoggerFunc("profile/subscribe", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								productId, NotFound());
+					logger.LoggerFunc("profile/subscribe", 
+								productId, NotFound(), User);
 					return NotFound();
 				}
 
@@ -409,23 +411,23 @@ namespace MyOnlineShop.Controllers
 					_context.requestedProducts.Add(product);
 					_context.SaveChanges();
 					var p = new Dictionary<string, string> { { "status", "success" } };
-					// Logger.LoggerFunc("profile/subscribe", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-					// productId, p);
+					logger.LoggerFunc("profile/subscribe", 
+						productId, p, User);
 					return Ok(p);
 
 				}
 				else
 				{
-					Logger.LoggerFunc("profile/subscribe", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								productId, Ok());
+					logger.LoggerFunc("profile/subscribe", 
+								productId, Ok(), User);
 					return Ok();
 
 				}
 			}
 			catch
 			{
-				Logger.LoggerFunc("profile/subscribe", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								productId, StatusCode(StatusCodes.Status500InternalServerError));
+				logger.LoggerFunc("profile/subscribe", 
+								productId, StatusCode(StatusCodes.Status500InternalServerError), User);
 				return StatusCode(StatusCodes.Status500InternalServerError);
 			}
 		}
@@ -435,12 +437,13 @@ namespace MyOnlineShop.Controllers
 		[Route("profile/subscribe")]
 		public ActionResult DeleteProductsubsrib(Guid productId)
 		{
-			try
+            Logger logger = new Logger(_context);
+            try
 			{
 				if (!ModelState.IsValid)
 				{
-					Logger.LoggerFunc("profile/subscribe", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								productId, BadRequest(ModelState));
+					logger.LoggerFunc("profile/subscribe", 
+								productId, BadRequest(ModelState), User);
 					return BadRequest(ModelState);
 				}
 				var username = User.FindFirstValue(ClaimTypes.Name);
@@ -450,33 +453,33 @@ namespace MyOnlineShop.Controllers
 
 				if (productId == null)
 				{
-					Logger.LoggerFunc("profile/subscribe", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								productId, BadRequest());
+					logger.LoggerFunc("profile/subscribe", 
+								productId, BadRequest(), User);
 					return BadRequest();
 				}
 				if (username == null)
 				{
-					Logger.LoggerFunc("profile/subscribe", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								productId, Unauthorized());
+					logger.LoggerFunc("profile/subscribe", 
+								productId, Unauthorized(), User);
 					return Unauthorized();
 				}
 				if (user.AccessLevel.ToLower() != "customer")
 				{
-					Logger.LoggerFunc("profile/subscribe", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								productId, Forbid());
+					logger.LoggerFunc("profile/subscribe", 
+								productId, Forbid(), User);
 					return Forbid();
 				}
 				if (checkproduct == null)
 				{
-					Logger.LoggerFunc("profile/subscribe", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								productId, NotFound());
+					logger.LoggerFunc("profile/subscribe", 
+								productId, NotFound(), User);
 					return NotFound();
 				}
 				var checksub = _context.requestedProducts.SingleOrDefault(r => r.UserID == user.ID && r.ProductID == productId);
 				if (checksub == null)
 				{
-					// Logger.LoggerFunc("profile/subscribe", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-					// productId, NotFound());
+					logger.LoggerFunc("profile/subscribe", 
+						 productId, NotFound(), User);
 					return NotFound();
 				}
 				else
@@ -484,8 +487,8 @@ namespace MyOnlineShop.Controllers
 					_context.requestedProducts.Remove(checksub);
 					_context.SaveChanges();
 					var p = new Dictionary<string, string> { { "status", "success" } };
-					Logger.LoggerFunc("profile/subscribe", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								productId, p);
+					logger.LoggerFunc("profile/subscribe", 
+								productId, p, User);
 					return Ok(p);
 				}
 
@@ -493,8 +496,8 @@ namespace MyOnlineShop.Controllers
 			}
 			catch
 			{
-				Logger.LoggerFunc("profile/subscribe", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								productId, StatusCode(StatusCodes.Status500InternalServerError));
+				logger.LoggerFunc("profile/subscribe", 
+								productId, StatusCode(StatusCodes.Status500InternalServerError), User);
 				return StatusCode(StatusCodes.Status500InternalServerError);
 			}
 		}
@@ -559,12 +562,13 @@ namespace MyOnlineShop.Controllers
 		[Route("profile/carts/current")]
 		public ActionResult profilecartcurrentput([FromBody] eachproduct product)
 		{
-			try
+            Logger logger = new Logger(_context);
+            try
 			{
 				if (!ModelState.IsValid)
 				{
-					Logger.LoggerFunc("profile/carts/current", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								product, BadRequest(ModelState));
+					logger.LoggerFunc("profile/carts/current", 
+								product, BadRequest(ModelState), User);
 					return BadRequest(ModelState);
 				}
 				else
@@ -574,14 +578,14 @@ namespace MyOnlineShop.Controllers
 					var customer = _context.customer.SingleOrDefault(c => c.UserId == user.ID);
 					if (username == null)
 					{
-						Logger.LoggerFunc("profile/carts/current", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								product, Unauthorized());
+						logger.LoggerFunc("profile/carts/current", 
+								product, Unauthorized(), User);
 						return Unauthorized();
 					}
 					if (user.AccessLevel.ToLower() != "customer")
 					{
-						Logger.LoggerFunc("profile/carts/current", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								product, Forbid());
+						logger.LoggerFunc("profile/carts/current", 
+								product, Forbid(), User);
 						return Forbid();
 					}
 
@@ -606,15 +610,15 @@ namespace MyOnlineShop.Controllers
 						var productprice = _context.productPrices.SingleOrDefault(p => p.ID == product.productId);
 						if (productprice == null)
 						{
-							Logger.LoggerFunc("profile/carts/current", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								product, Forbid());
+							logger.LoggerFunc("profile/carts/current", 
+								product, Forbid(), User);
 							return NotFound();
 						}
 						var product1 = _context.Products.SingleOrDefault(p => p.ID == productprice.ProductID);
 						if (product.amount > productprice.Amount)
 						{
-							Logger.LoggerFunc("profile/carts/current", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								product, NotFound());
+							logger.LoggerFunc("profile/carts/current", 
+								product, NotFound(), User);
 							return NotFound();
 						}
 						var checkorder = _context.orders.SingleOrDefault(c => c.CartID == checkcart.ID && c.ProductPriceID == product.productId);
@@ -660,8 +664,8 @@ namespace MyOnlineShop.Controllers
 							status = checkcart.Status,
 							updateDate = checkcart.UpdateDate
 						};
-						Logger.LoggerFunc("profile/carts/current", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								product, p);
+						logger.LoggerFunc("profile/carts/current", 
+								product, p, User);
 						return Ok(p);
 
 					}
@@ -669,8 +673,8 @@ namespace MyOnlineShop.Controllers
 			}
 			catch
 			{
-				Logger.LoggerFunc("profile/carts/current", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								product, StatusCode(StatusCodes.Status500InternalServerError));
+				logger.LoggerFunc("profile/carts/current", 
+								product, StatusCode(StatusCodes.Status500InternalServerError), User);
 				return StatusCode(StatusCodes.Status500InternalServerError);
 			}
 		}
@@ -680,12 +684,13 @@ namespace MyOnlineShop.Controllers
 		[Route("profile/carts/current")]
 		public ActionResult profilecartcurrentdelete()
 		{
-			try
+            Logger logger = new Logger(_context);
+            try
 			{
 				if (!ModelState.IsValid)
 				{
-					Logger.LoggerFunc("profile/carts/current", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								null, BadRequest(ModelState));
+					logger.LoggerFunc("profile/carts/current", 
+								null, BadRequest(ModelState), User);
 					return BadRequest(ModelState);
 				}
 				var username = User.FindFirstValue(ClaimTypes.Name);
@@ -693,22 +698,22 @@ namespace MyOnlineShop.Controllers
 				var customer = _context.customer.SingleOrDefault(c => c.UserId == user.ID);
 				if (username == null)
 				{
-					Logger.LoggerFunc("profile/carts/current", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								null, Unauthorized());
+					logger.LoggerFunc("profile/carts/current", 
+								null, Unauthorized(), User);
 					return Unauthorized();
 				}
 				if (user.AccessLevel.ToLower() != "customer")
 				{
-					Logger.LoggerFunc("profile/carts/current", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								null, Forbid());
+					logger.LoggerFunc("profile/carts/current", 
+								null, Forbid(), User);
 					return Forbid();
 				}
 
 				var checkcart = _context.cart.SingleOrDefault(c => c.Status.ToLower() == "filling" && c.CustomerID == customer.ID);
 				if (checkcart == null)
 				{
-					Logger.LoggerFunc("profile/carts/current", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								null, NotFound());
+					logger.LoggerFunc("profile/carts/current", 
+								null, NotFound(), User);
 					return NotFound();
 				}
 
@@ -722,15 +727,15 @@ namespace MyOnlineShop.Controllers
 					}
 
 					var p = new Dictionary<string, string>() { { "status", "success" } };
-					Logger.LoggerFunc("profile/carts/current", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								null, p);
+					logger.LoggerFunc("profile/carts/current", 
+								null, p, User);
 					return Ok(p);
 				}
 			}
 			catch
 			{
-				Logger.LoggerFunc("profile/carts/current", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								null, StatusCode(StatusCodes.Status500InternalServerError));
+				logger.LoggerFunc("profile/carts/current", 
+								null, StatusCode(StatusCodes.Status500InternalServerError), User);
 				return StatusCode(StatusCodes.Status500InternalServerError);
 			}
 		}
