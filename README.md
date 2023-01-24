@@ -33,7 +33,8 @@ In the next steep install the requirements for both frontend and backend server.
 -   [Microsoft Sql Management Studio](https://learn.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms) 
 -   [sdks](https://github/dotnet/installer)
 -   [Visual Studio Editor](https://visualstudio.microsoft.com/downloads/)
--   C# 
+-   C# (From Visual Studio)
+
 After installing all the requirements, open the project folder inside command-line and run the following command to run the project:
 
 ```bash
