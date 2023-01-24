@@ -22,7 +22,7 @@ namespace MyOnlineShop.Controllers
         }
 
         [HttpGet]
-        [Route("Customers")]
+        [Route("customers")]
         public ActionResult<IEnumerable<Pagination<customerModel>>> CustomersGet([FromQuery] int page, [FromQuery] int customersPerPage)
         {
             try
@@ -43,7 +43,7 @@ namespace MyOnlineShop.Controllers
                             .Skip(start)
                             .Take(count).Select(u => new customerModel
                             {
-                                id = u.ID,
+                                id = u.UserId,
                                 username = u.user.UserName,
                                 firstName = u.user.FirstName,
                                 lastName = u.user.LastName,
@@ -78,7 +78,7 @@ namespace MyOnlineShop.Controllers
 
 
         [HttpGet]
-        [Route("Customers/{id}")]
+        [Route("customers/{id}")]
         public ActionResult<IEnumerable<customerModel>> EachCustomer(Guid id)
         {
             try
@@ -87,26 +87,15 @@ namespace MyOnlineShop.Controllers
                 {
                     return BadRequest(ModelState);
                 }
-
-                var c1 = _context.customer.ToList();
-                Customer cc = null;
-                int i = 0;
-                foreach (var t in c1)
-                {
-                    if (t.ID == id)
-                    {
-                        cc = c1.Single(x => x.ID == id);
-                        i++;
-                    }
-                }
-
-                if (cc == null)
+                else if (!_context.customer.Any(c => c.UserId == id))
                 {
                     return StatusCode(StatusCodes.Status404NotFound);
                 }
                 else
                 {
-                    var user = _context.users.SingleOrDefault(f => f.ID == cc.UserId);
+                    Customer cc = _context.customer.Single(c=>c.UserId == id);
+                    User user = _context.users.Single(f => f.ID == id);
+
                     customerModel schema = new customerModel()
                     {
                         id = cc.UserId,
@@ -134,33 +123,37 @@ namespace MyOnlineShop.Controllers
 
 
         [HttpPut]
-        [Route("Customers/{id}")]
-        public ActionResult<IEnumerable<customerModel>> EachCustomerPut(Guid id, [FromQuery] customerreqModel custupdate)
+        [Route("customers/{id}")]
+        public ActionResult<IEnumerable<customerModel>> EachCustomerPut(Guid id, [FromBody] customerreqModel custupdate)
         {
             try
             {
-                var c1 = _context.customer.ToList();
-                Customer cc = null;
-                int i = 0;
-                foreach (var t in c1)
-                {
-                    if (t.ID == id)
-                    {
-                        cc = c1.Single(x => x.ID == id);
-                        i++;
-                    }
-                }
+                //var c1 = _context.customer.ToList();
+                //Customer cc = null;
+                //int i = 0;
+                //foreach (var t in c1)
+                //{
+                //    if (t.ID == id)
+                //    {
+                //        cc = c1.Single(x => x.ID == id);
+                //        i++;
+                //    }
+                //}
 
-                if (cc == null)
+                //if (!_context.customer.Any(c => c.UserId == id)) {
+                //    return StatusCode(StatusCodes.Status404NotFound);
+                //}
+
+                if (!_context.customer.Any(c => c.UserId == id))
                 {
                     Logger.LoggerFunc($"Customers/{id}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
                             custupdate, StatusCode(StatusCodes.Status404NotFound));
                     return StatusCode(StatusCodes.Status404NotFound);
                 }
-                else
-                {
-                    cc.Address = custupdate.address;
-                    cc.Balance = custupdate.balance;
+                else {
+                    Customer cc = _context.customer.Single(c => c.UserId == id);
+                    if (custupdate.address != null) cc.Address = custupdate.address;
+                    cc.Balance += custupdate.balance;
 
                     _context.customer.UpdateRange();
                     _context.SaveChanges();

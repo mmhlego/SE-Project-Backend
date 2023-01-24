@@ -88,7 +88,7 @@ namespace MyOnlineShop.Controllers
 					};
 					commentsSchema.Add(temp);
 				}
-
+				commentsSchema.Sort((Models.apimodel.Comment cmt1, Models.apimodel.Comment cmt2) => cmt2.SendDate.CompareTo(cmt1.SendDate));
 
 				var allComments = new Pagination<Models.apimodel.Comment>()
 				{
@@ -205,8 +205,8 @@ namespace MyOnlineShop.Controllers
 						};
 						_context.comment.Remove(comment);
 						_context.SaveChanges();
-						Logger.LoggerFunc($"comments/{id:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-							id, temp);
+						//Logger.LoggerFunc($"comments/{id:Guid}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+						//	id, temp);
 						return Ok(temp);
 					}
 				}

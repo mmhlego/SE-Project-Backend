@@ -24,21 +24,21 @@ namespace MyOnlineShop.Controllers
 		{
 			if (!ModelState.IsValid)
 			{
-				Logger.LoggerFunc("auth/login", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-						loginModel, BadRequest(ModelState));
+				//Logger.LoggerFunc("auth/login", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+				//		loginModel, BadRequest(ModelState));
 				return BadRequest(ModelState);
 			}
 			var user = _context.users.FirstOrDefault(u => u.UserName == loginModel.username && u.Password == loginModel.password);
 			if (user == null)
 			{
-				Logger.LoggerFunc("auth/login", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-						loginModel, new Dictionary<string, string>() { { "status", "Failed" } });
+				//Logger.LoggerFunc("auth/login", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+				//		loginModel, new Dictionary<string, string>() { { "status", "Failed" } });
 				return Ok(new Dictionary<string, string>() { { "status", "Failed" } });
 			}
 			else if (user.Restricted)
 			{
-				Logger.LoggerFunc("auth/login", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-						loginModel, new Dictionary<string, string>() { { "status", "Restricted" } });
+				//Logger.LoggerFunc("auth/login", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+				//		loginModel, new Dictionary<string, string>() { { "status", "Restricted" } });
 				return Ok(new Dictionary<string, string>() { { "status", "Restricted" } });
 			}
 			else
@@ -119,8 +119,8 @@ namespace MyOnlineShop.Controllers
 					}
 					status = new Dictionary<string, string>() { { "status", "Success" } };
 				}
-				Logger.LoggerFunc("auth/register", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-						registerModel, status);
+				//Logger.LoggerFunc("auth/register", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+				//		registerModel, status);
 				return Ok(status);
 			}
 			catch

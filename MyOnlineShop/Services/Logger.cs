@@ -8,7 +8,7 @@
 			{
 				DateTime date = DateTime.Now;
 				string path = @"./SystemLog.txt";
-				string Log = $"{date.Date}\t|\t{date.TimeOfDay}\t|\t{ApiRoute}\t|\t{userID}\t|\t{System.Text.Json.JsonSerializer.Serialize(inData)}\t|\t{System.Text.Json.JsonSerializer.Serialize(outData)}";
+				string Log = $"{date.ToString("d")}\t|\t{date.TimeOfDay}\t|\t{ApiRoute}\t|\t{userID}\t|\t{System.Text.Json.JsonSerializer.Serialize(inData)}\t|\t{System.Text.Json.JsonSerializer.Serialize(outData)}";
 
 				StreamWriter LogWriter = new StreamWriter(path, true);
 

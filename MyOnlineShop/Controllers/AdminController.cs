@@ -19,7 +19,7 @@ namespace MyOnlineShop.Controllers
 
         [HttpGet]
         [Route("admin/users")]
-        public ActionResult<IEnumerable<Pagination<userModel>>> userssget([FromQuery] int page, [FromQuery] int usersPerPage)
+        public ActionResult<IEnumerable<Pagination<userModel>>> userssget([FromQuery] int page, [FromQuery] int usersPerPage, [FromQuery] string type)
         {
             try
             {
@@ -29,9 +29,19 @@ namespace MyOnlineShop.Controllers
                 {
                     return Unauthorized();
                 }
-                if (accessLevel == "admin")
+                if (type == null || type.Length == 0) {
+                    return StatusCode(StatusCodes.Status400BadRequest);
+                }
+                if (accessLevel == "admin" || accessLevel == "owner")
                 {
-                    var length = _context.users.ToList().Count();
+                    type = type.ToLower();
+
+                    if(accessLevel == "admin" && (type == "admin" || type == "storekeeper" || type == "owner")) {
+                        return Forbid();
+                    }
+
+                    var selectedUsers = _context.users.ToList().FindAll(u => u.AccessLevel.ToLower() == type);
+                    var length = selectedUsers.Count();
                     var totalPages = (int)Math.Ceiling((decimal)length / (decimal)usersPerPage);
                     page = Math.Min(totalPages, page);
                     var start = Math.Max((page - 1) * usersPerPage, 0);
@@ -44,7 +54,7 @@ namespace MyOnlineShop.Controllers
                         page = page,
                         totalPages = totalPages,
                         perPage = usersPerPage,
-                        data = _context.users
+                        data = selectedUsers
                     .Skip(start)
                     .Take(count)
                     .Select(u => new userModel
@@ -232,11 +242,10 @@ namespace MyOnlineShop.Controllers
                         id, Unauthorized());
                     return Unauthorized();
                 }
-                if (accessLevel == "admin")
+                if (accessLevel == "admin" || accessLevel == "owner")
                 {
 
                     var userId = _context.users.SingleOrDefault(p => p.ID == id);
-                    bool restricted = true;
                     if (userId == null)
                     {
                         Logger.LoggerFunc($"admin/users/{id}", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
@@ -245,8 +254,8 @@ namespace MyOnlineShop.Controllers
                     }
                     else
                     {
-                        userId.Restricted = restricted;
-                        if (userId.AccessLevel.ToLower() == "seller")
+                        userId.Restricted = !userId.Restricted;
+                        if (userId.AccessLevel.ToLower() == "seller" && userId.Restricted)
                         {
                             var productprices = _context.productPrices.Where(s => s.SellerID == userId.ID).ToList();
                             foreach (var p in productprices)
@@ -297,7 +306,7 @@ namespace MyOnlineShop.Controllers
 
         [HttpGet]
         [Route("admin/discountTokens")]
-        public ActionResult<IEnumerable<Pagination<DiscountToken>>> discountTokens(bool isEvent, bool expired, int page, int tokensPerPage)
+        public ActionResult<IEnumerable<Pagination<DiscountToken>>> discountTokens(/*bool isEvent, bool expired,*/ int page, int tokensPerPage)
         {
             try
             {
@@ -309,24 +318,24 @@ namespace MyOnlineShop.Controllers
                 if (accessLevel == "admin")
                 {
                     var alltokens = _context.tokens.ToList();
-                    if (isEvent == true || isEvent == false)
-                    {
-                        alltokens = alltokens.Where(P => P.IsEvent == isEvent).ToList();
-                    }
-                    if (expired == true || expired == false)
-                    {
-                        if (expired == true)
-                        {
-                            alltokens = alltokens.Where(p => p.ExpirationDate > DateTime.Now).ToList();
+                    //if (isEvent == true || isEvent == false)
+                    //{
+                    //    alltokens = alltokens.Where(P => P.IsEvent == isEvent).ToList();
+                    //}
+                    //if (expired == true || expired == false)
+                    //{
+                    //    if (expired == true)
+                    //    {
+                    //        alltokens = alltokens.Where(p => p.ExpirationDate > DateTime.Now).ToList();
 
-                        }
-                        else
-                        {
-                            alltokens = alltokens.Where(p => p.ExpirationDate <= DateTime.Now).ToList();
-                        }
-                    }
+                    //    }
+                    //    else
+                    //    {
+                    //        alltokens = alltokens.Where(p => p.ExpirationDate <= DateTime.Now).ToList();
+                    //    }
+                    //}
 
-                    var length = _context.tokens.ToList().Count();
+                    var length = alltokens.Count();
                     if (length == 0)
                     {
                         return NotFound();
@@ -815,6 +824,43 @@ namespace MyOnlineShop.Controllers
             }
             catch
             {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
+
+
+        [HttpGet]
+        [Route("admin/log")]
+        public ActionResult<Log> GetLog(int lines = 1) {
+            try {
+                string accessLevel = User.FindFirstValue(ClaimTypes.Role).ToLower();
+
+                if (accessLevel == "owner") {
+                    string path = @"./SystemLog.txt";
+
+                    if (System.IO.File.Exists(path)) {
+                        List<string> logLines = new List<string>(System.IO.File.ReadAllLines(path));
+
+                        if (logLines.Count > lines) {
+                            logLines.Reverse();
+
+                            logLines = logLines.GetRange(0, lines);
+                        
+                            logLines.Reverse();
+                        }
+                        var response = new Log() {
+                            lines = logLines.ToArray(),
+                            update = DateTime.Now,
+                        };
+
+                        return Ok(response);
+                    } else {
+                        return StatusCode(StatusCodes.Status404NotFound);
+                    }
+                } else {
+                    return StatusCode(StatusCodes.Status403Forbidden);
+                }
+            } catch {
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }

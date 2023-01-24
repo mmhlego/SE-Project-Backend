@@ -128,7 +128,7 @@ namespace MyOnlineShop.Controllers
                         dislikes = ss.dislikes,
                         likes = ss.likes,
                         image = user.ImageUrl,
-                        name = user.UserName,
+                        name = user.FirstName + " " + user.LastName,
                         restricted = user.Restricted
 
                     };
@@ -279,7 +279,7 @@ namespace MyOnlineShop.Controllers
 
 
         [HttpPut]
-        [Route("Sellers/{id}/likes")]
+        [Route("sellers/{id}/likes")]
         public ActionResult<IEnumerable<SellerSchema>> SellerLikes(Guid id, bool like)
         {
             try
@@ -309,43 +309,27 @@ namespace MyOnlineShop.Controllers
                     if (like)
                     {
                         ss.likes += 1;
-                        _context.sellers.UpdateRange();
-                        _context.SaveChanges();
-                        seller = new SellerSchema()
-                        {
-                            id = ss.ID,
-                            name = user.FirstName + " " + user.LastName,
-                            image = user.ImageUrl,
-                            information = ss.Information,
-                            address = ss.Address,
-                            dislikes = ss.dislikes,
-                            likes = ss.likes,
-                            restricted = user.Restricted
-                        };
-                        Logger.LoggerFunc($"Sellers/{id}/likes", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                                like, seller);
-                        return Ok(seller);
                     }
                     else
                     {
                         ss.dislikes += 1;
-                        _context.sellers.UpdateRange();
-                        _context.SaveChanges();
-                        seller = new SellerSchema()
-                        {
-                            id = ss.ID,
-                            name = user.FirstName + " " + user.LastName,
-                            image = user.ImageUrl,
-                            information = ss.Information,
-                            address = ss.Address,
-                            dislikes = ss.dislikes,
-                            likes = ss.likes,
-                            restricted = user.Restricted
-                        };
-                        Logger.LoggerFunc($"Sellers/{id}/likes", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-                                like, seller);
-                        return Ok(seller);
                     }
+
+                    _context.sellers.UpdateRange();
+                    _context.SaveChanges();
+                    seller = new SellerSchema() {
+                        id = ss.ID,
+                        name = user.FirstName + " " + user.LastName,
+                        image = user.ImageUrl,
+                        information = ss.Information,
+                        address = ss.Address,
+                        dislikes = ss.dislikes,
+                        likes = ss.likes,
+                        restricted = user.Restricted
+                    };
+                    Logger.LoggerFunc($"Sellers/{id}/likes", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+                            like, seller);
+                    return Ok(seller);
                 }
             }
             catch

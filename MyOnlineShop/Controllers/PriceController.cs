@@ -84,6 +84,7 @@ namespace MyOnlineShop.Controllers
                         SellerSchema s = new SellerSchema()
                         {
                             id = seller1.ID,
+                            name = user.UserName,
                             address = seller1.Address,
                             likes = seller1.likes,
                             dislikes = seller1.dislikes,

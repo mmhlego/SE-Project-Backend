@@ -57,7 +57,7 @@ namespace MyOnlineShop.Controllers
 
 		[HttpPut]
 		[Route("profile/")]
-		public ActionResult putProfile(putprofileModel p)
+		public ActionResult putProfile([FromBody] putprofileModel p)
 		{
 			try
 			{
@@ -70,28 +70,39 @@ namespace MyOnlineShop.Controllers
 								p, Unauthorized());
 					return Unauthorized();
 				}
-				var emailcheck = _context.users.SingleOrDefault(s => s.Email == p.email && s.UserName != username);
-				var phonecheck = _context.users.SingleOrDefault(s => s.PhoneNumber == p.phoneNumber && s.UserName != username);
-				if (emailcheck != null || phonecheck != null)
-				{
-					Logger.LoggerFunc("profile/", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								p, Forbid());
-					return Forbid();
-				}
-				if (!ModelState.IsValid)
-				{
-					Logger.LoggerFunc("profile/", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								p, BadRequest(ModelState));
-					return BadRequest(ModelState);
-				}
-				else
-				{
-					user.FirstName = p.firstName;
-					user.LastName = p.lastName;
-					user.PhoneNumber = p.phoneNumber;
+
+                if (p.email != null) {
+					var emailcheck = _context.users.SingleOrDefault(s => s.Email == p.email && s.UserName != username);
+					if (emailcheck != null) {
+						Logger.LoggerFunc("profile/", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+									p, Forbid());
+						return Forbid();
+					}
 					user.Email = p.email;
-					user.ImageUrl = p.profileImage;
-					user.BirthDate = p.birthDate;
+				}
+
+				if (p.phoneNumber != null) {
+					var phonecheck = _context.users.SingleOrDefault(s => s.PhoneNumber == p.phoneNumber && s.UserName != username);
+					if (phonecheck != null) {
+						Logger.LoggerFunc("profile/", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+									p, Forbid());
+						return Forbid();
+					}
+					user.PhoneNumber = p.phoneNumber;
+				}
+
+				//if (!ModelState.IsValid)
+				//{
+				//	Logger.LoggerFunc("profile/", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+				//				p, BadRequest(ModelState));
+				//	return BadRequest(ModelState);
+				//}
+				//else
+				//{
+					if(p.firstName!=null) user.FirstName = p.firstName;
+					if(p.lastName!=null) user.LastName= p.lastName;
+					if(p.profileImage != null) user.ImageUrl= p.profileImage;
+					if(p.birthDate != new DateTime()) user.BirthDate = p.birthDate;
 					_context.Update(user);
 					_context.SaveChanges();
 					profileModel p1 = new profileModel()
@@ -110,7 +121,7 @@ namespace MyOnlineShop.Controllers
 					Logger.LoggerFunc("profile/", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
 								p, p1);
 					return Ok(p1);
-				}
+				//}
 			}
 			catch
 			{

@@ -94,7 +94,7 @@ namespace MyOnlineShop.Controllers
 
 				Random random = new Random();
 				int numb = random.Next();
-				double price = random.NextDouble() * 10000000;
+				double price = random.Next(10,500) * 1000;
 				int randseller = random.Next(sellers.Count);
 
 				Product productToAdd = new Product()
@@ -105,19 +105,30 @@ namespace MyOnlineShop.Controllers
 					Name = category + numb,
 					Image = imageurl,
 					Description = "product description",
-					likes = 0,
-					dislikes = 0
+					likes = random.Next(0,50),
+					dislikes = random.Next(0, 50)
 
 				};
 				_context.Products.Add(productToAdd);
 				_context.SaveChanges();
+
+				var discount = "";
+				switch(random.Next(0,5)) {
+					case 0:
+					case 1:
+						discount = "AMOUNT_" + Convert.ToString(random.Next(2, 9) * 1000);
+						break;
+					case 2:
+						discount = "PERCENT_" + Convert.ToString(random.Next(3, 10));
+						break;
+				}
 
 				var productPrice = new ProductPrice()
 				{
 					Price = price,
 					PriceHistory = "[]",
 					Amount = 10,
-					Discount = "",
+					Discount = discount,
 					SellerID = sellers[randseller].ID,
 					ProductID = productToAdd.ID,
 					ID = Guid.NewGuid()
@@ -135,7 +146,11 @@ namespace MyOnlineShop.Controllers
 		[Route("add/Comment")]
 		public IActionResult AddComment(int Amount)
 		{
-
+			List<String> comments = new List<String> {
+				"بسیار عالیه از همه نظر حرف نداره الان ۱۰ماه خریدم وخیلییییییی زیاد راضی هستم بسیار عالیه از همه نظر حرف نداره",
+				"خیلی بد هست مجبور شدن مرجوعش بدم خیلی بد هست مجبور شدن مرجوعش بدم خیلی بد هست مجبور شدن مرجوعش بدم",
+				"بدک نبود راضیم بهترش هم توی بازار هست بدک نبود راضیم بهترش هم توی بازار هست بدک نبود راضیم بهترش هم توی بازار هست",
+			};
 			List<Customer> customers = _context.customer.ToList();
 			List<Product> products = _context.Products.ToList();
 			for (int i = 0; i < Amount; i++)
@@ -151,9 +166,9 @@ namespace MyOnlineShop.Controllers
 					Id = Guid.NewGuid(),
 					ProductId = products[randProduct].ID,
 					UserId = customers[randCust].UserId,
-					likes = 0,
-					dislikes = 0,
-					Text = "this is Test Comment",
+					likes = random.Next(0, 50),
+					dislikes = random.Next(0, 50),
+					Text = comments[random.Next(comments.Count)],
 					SentDate = DateTime.Now
 				};
 				_context.comment.Add(comment);
