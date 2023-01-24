@@ -28,8 +28,8 @@ To start working with the project, clone this repository alongside the [SE-Proje
 In the next steep install the requirements for both frontend and backend server.
 ## Backend requirements:
 -   Runs on localhost:5000
--   .Net 6.0
--   Nuget Packages
+-   [.Net 6.0](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)
+-   [Nuget Packages(From Visual Studio)](https://learn.microsoft.com/en-us/nuget/quickstart/install-and-use-a-package-in-visual-studio)
 -   [Microsoft Sql Management Studio](https://learn.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms) 
 -   [sdks](https://github/dotnet/installer)
 -   [Visual Studio Editor](https://visualstudio.microsoft.com/downloads/)
