@@ -39,8 +39,9 @@ After installing all the requirements, open the project folder inside command-li
 ```bash
 dotnet run
 ```
+- Or you can easily open project with visual studio editor and build and run the project.
 
-_Not that the frontend server runs on localhost:3000 and backend server runs on localhost:5000_
+_Note that the frontend server runs on localhost:3000 and backend server runs on localhost:5000_
 
 ## Other Resources
 
