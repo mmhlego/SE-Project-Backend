@@ -27,13 +27,13 @@ List of all technologies used to make this project:
 To start working with the project, clone this repository alongside the [SE-Project-Frontend](https://github.com/mmhlego/SE-Project-Frontend) repository.
 In the next steep install the requirements for both frontend and backend server.
 ## Backend requirements:
-	-   Runs on localhost:5000
-	-   .Net 6.0
-	-   Nuget Packages
-	-   [Microsoft Sql Management Studio](https://learn.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms) 
-        -   [sdks](https://github/dotnet/installer)
-        -   [Visual Studio Editor](https://visualstudio.microsoft.com/downloads/)
-        -   C# 
+-   Runs on localhost:5000
+-   .Net 6.0
+-   Nuget Packages
+-   [Microsoft Sql Management Studio](https://learn.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms) 
+-   [sdks](https://github/dotnet/installer)
+-   [Visual Studio Editor](https://visualstudio.microsoft.com/downloads/)
+-   C# 
 After installing all the requirements, open the project folder inside command-line and run the following command to run the project:
 
 ```bash
