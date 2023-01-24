@@ -634,8 +634,13 @@ namespace MyOnlineShop.Controllers
 						{
 							checkorder.Amount = checkorder.Amount + product.amount;
 
-							_context.Update(checkorder);
-							_context.SaveChanges();
+							if(checkorder.Amount <= 0) {
+								_context.Remove(checkorder);
+								_context.SaveChanges();
+							} else {
+								_context.Update(checkorder);
+								_context.SaveChanges();
+							}
 						}
 						else
 						{
