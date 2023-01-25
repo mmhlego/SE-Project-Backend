@@ -677,6 +677,9 @@ namespace MyOnlineShop.Controllers
 					}
 
                     checkcart.TotalPrice = (checkcart.TotalPrice + orderprice);
+				if(checkcart.TotalPrice < 0) {
+					checkcart.TotalPrice = 0;
+				}
 					checkcart.UpdateDate = DateTime.Now;
 					_context.cart.Update(checkcart);
 					_context.SaveChanges();
@@ -827,6 +830,17 @@ namespace MyOnlineShop.Controllers
 						cart.UpdateDate = DateTime.Now;
                         var s = new Dictionary<string, string>() { { "status", "Rejected" } };
                         _context.cart.Update(cart);
+						_context.SaveChanges();
+						Cart c = new Cart()
+						{
+							CustomerID = customer.ID,
+							Description = "",
+							Status = "Filling",
+							ID = Guid.NewGuid(),
+							TotalPrice = 0,
+							UpdateDate = DateTime.Now
+						};
+						_context.cart.Add(c);
 						_context.SaveChanges();
 						return Ok(s);
 					}
