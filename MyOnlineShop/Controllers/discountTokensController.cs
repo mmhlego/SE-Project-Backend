@@ -112,7 +112,7 @@ namespace MyOnlineShop.Controllers
                 }
                 else if (t[0] == "PERCENT")
                 {
-                    cart.TotalPrice = cart.TotalPrice - (cart.TotalPrice * a / 100);
+                    cart.TotalPrice = (cart.TotalPrice * (100-a) / 100);
                 }
                 cart.UpdateDate = DateTime.Now;
                 _context.Update(cart);
