@@ -516,7 +516,7 @@ namespace MyOnlineShop.Controllers
                 {
                     return Unauthorized();
                 }
-                if (accessLevel != "admin")
+                if (accessLevel != "admin" && accessLevel != "storekeeper")
                 {
                     return Forbid();
                 }
@@ -570,30 +570,29 @@ namespace MyOnlineShop.Controllers
                         description = cart.Description,
                         id = cart.ID,
                         updateDate = cart.UpdateDate,
-                        products = eachproducts
+                        products = eachproducts,
+                        totalprice = cart.TotalPrice,
 
                     };
                     carts.Add(eachCart);
                 }
 
 
-                var lenght = c.Count();
-                if (lenght == 0)
+                var length = c.Count();
+                if (length == 0)
                 {
                     return NotFound();
                 }
-                var length = _context.users.ToList().Count();
                 var totalPages = (int)Math.Ceiling((decimal)length / (decimal)cartsPerPage);
                 page = Math.Min(totalPages, page);
                 var start = Math.Max((page - 1) * cartsPerPage, 0);
                 var end = Math.Min(page * cartsPerPage, length);
                 var count = Math.Max(end - start, 0);
-                cartsPerPage = count;
                 var allcarts = new Pagination<eachCart>
                 {
                     page = page,
                     totalPages = totalPages,
-                    perPage = cartsPerPage,
+                    perPage = count,
                     data = carts
                     .Skip(start).Take(count).ToList()
                 };
@@ -683,7 +682,7 @@ namespace MyOnlineShop.Controllers
                     return Unauthorized();
                 }
 
-                if (accessLevel == "admin")
+                if (accessLevel == "admin" || accessLevel=="storekeeper")
                 {
                     var cartId = _context.cart.SingleOrDefault(p => p.ID == id);
 
