@@ -817,7 +817,10 @@ namespace MyOnlineShop.Controllers
 					}
 						var productprice = _context.productPrices.SingleOrDefault(p => p.ID == i.ProductPriceID);
 						productprice.Amount = productprice.Amount - i.Amount;
-					if(productprice.Amount < 0)
+                    _context.productPrices.Update(productprice);
+                    _context.SaveChanges();
+
+                    if (productprice.Amount < 0)
 					{
 						cart.Status = "Rejected";
 						cart.UpdateDate = DateTime.Now;
