@@ -558,7 +558,9 @@ namespace MyOnlineShop.Controllers
 						description = checkcart.Description,
 						products = eachproducts,
 						status = checkcart.Status,
-						updateDate = checkcart.UpdateDate
+						updateDate = checkcart.UpdateDate,
+						totalprice = checkcart.TotalPrice
+						
 					};
 					return Ok(p);
 
@@ -572,8 +574,8 @@ namespace MyOnlineShop.Controllers
 		[Route("profile/carts/current")]
 		public ActionResult profilecartcurrentput([FromBody] eachproduct requestBody)
 		{
-			try
-			{
+			//try
+			//{
 				if (!ModelState.IsValid)
 				{
 					Logger.LoggerFunc("profile/carts/current", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
@@ -635,17 +637,6 @@ namespace MyOnlineShop.Controllers
 
 					if (checkorder != null)
 					{
-						var p1 = _context.productPrices.SingleOrDefault(l => l.ID == requestBody.productId);
-                        string[] t = p.Discount.Split(new char[] { '_' });
-                        double a = Convert.ToDouble(t[1]);
-                        if (t[0] == "AMOUNT")
-						{
-							cart.TotalPrice = cart.TotalPrice - a;
-						}
-                        else if (t[0] == "PERCENT")
-                        {
-                            cart.TotalPrice = cart.TotalPrice - (cart.TotalPrice * a / 100);
-						}
 						checkorder.Amount = checkorder.Amount + requestBody.amount;
 
 						if(checkorder.Amount <= 0) {
@@ -668,8 +659,20 @@ namespace MyOnlineShop.Controllers
 						_context.orders.Add(order);
 						_context.SaveChanges();
 					}
-
-					checkcart.TotalPrice = checkcart.TotalPrice + (requestBody.amount * productprice.Price);
+					double orderprice = 0;
+                    var p1 = _context.productPrices.SingleOrDefault(l => l.ID == requestBody.productId);
+                    string[] t = p1.Discount.Split(new char[] { '_' });
+                    double a = Convert.ToDouble(t[1]);
+                    if (t[0] == "AMOUNT")
+                    {
+                        orderprice = requestBody.amount * (productprice.Price - a);
+                    }
+                    else if (t[0] == "PERCENT")
+                    {   orderprice = (requestBody.amount * (productprice.Price * a / 100));
+                       
+                    }
+                    checkcart.TotalPrice = (checkcart.TotalPrice + orderprice);
+					checkcart.UpdateDate = DateTime.Now;
 					_context.cart.Update(checkcart);
 					_context.SaveChanges();
 
@@ -697,13 +700,13 @@ namespace MyOnlineShop.Controllers
 							requestBody, p);
 					return Ok(p);
 				}
-			}
-			catch
-			{
-				Logger.LoggerFunc("profile/carts/current", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								requestBody, StatusCode(StatusCodes.Status500InternalServerError));
-				return StatusCode(StatusCodes.Status500InternalServerError);
-			}
+			//}
+			//catch
+			//{
+			//	//Logger.LoggerFunc("profile/carts/current", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+			//	//				requestBody, StatusCode(StatusCodes.Status500InternalServerError));
+			//	return StatusCode(StatusCodes.Status500InternalServerError);
+			//}
 		}
 
 

@@ -15,6 +15,7 @@
 		public string status { get; set; }
 		public string description { get; set; }
 		public DateTime updateDate { get; set; }
+		public double totalprice { get; set; }
 
 	}
 
