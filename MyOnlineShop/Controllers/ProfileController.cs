@@ -560,7 +560,6 @@ namespace MyOnlineShop.Controllers
 						status = checkcart.Status,
 						updateDate = checkcart.UpdateDate,
 						totalprice = checkcart.TotalPrice
-						
 					};
 					return Ok(p);
 
@@ -662,15 +661,20 @@ namespace MyOnlineShop.Controllers
 					double orderprice = 0;
                     var p1 = _context.productPrices.SingleOrDefault(l => l.ID == requestBody.productId);
                     string[] t = p1.Discount.Split(new char[] { '_' });
-                    double a = Convert.ToDouble(t[1]);
-                    if (t[0] == "AMOUNT")
+					
+                    if (t.Length == 2 && t[0] == "AMOUNT")
                     {
-                        orderprice = requestBody.amount * (productprice.Price - a);
+						double a = Convert.ToDouble(t[1]);
+						orderprice = requestBody.amount * Math.Max(productprice.Price - a, 0);
                     }
-                    else if (t[0] == "PERCENT")
-                    {   orderprice = (requestBody.amount * (productprice.Price * a / 100));
-                       
-                    }
+                    else if (t.Length == 2 && t[0] == "PERCENT")
+                    {
+						double a = Convert.ToDouble(t[1]);
+						orderprice = (requestBody.amount * (productprice.Price * ((100 - a) / 100)));
+                    } else {
+						orderprice = requestBody.amount * productprice.Price;
+					}
+
                     checkcart.TotalPrice = (checkcart.TotalPrice + orderprice);
 					checkcart.UpdateDate = DateTime.Now;
 					_context.cart.Update(checkcart);
@@ -693,7 +697,8 @@ namespace MyOnlineShop.Controllers
 						description = checkcart.Description,
 						products = eachproducts,
 						status = checkcart.Status,
-						updateDate = checkcart.UpdateDate
+						updateDate = checkcart.UpdateDate,
+						totalprice = checkcart.TotalPrice,
 					};
 
 					Logger.LoggerFunc("profile/carts/current", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,

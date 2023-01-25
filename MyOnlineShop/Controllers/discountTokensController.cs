@@ -105,13 +105,14 @@ namespace MyOnlineShop.Controllers
             {
                 status = "Valid";
                 string[] t = token1.Discount.Split(new char[] { '_' });
-                double a = Convert.ToDouble(t[1]);
-                if (t[0] == "AMOUNT")
+                if (t.Length==2 && t[0] == "AMOUNT")
                 {
+                    double a = Convert.ToDouble(t[1]);
                     cart.TotalPrice = cart.TotalPrice - a;
                 }
-                else if (t[0] == "PERCENT")
+                else if (t.Length == 2 && t[0] == "PERCENT")
                 {
+                    double a = Convert.ToDouble(t[1]);
                     cart.TotalPrice = cart.TotalPrice - (cart.TotalPrice * a / 100);
                 }
                 cart.UpdateDate = DateTime.Now;
@@ -140,9 +141,8 @@ namespace MyOnlineShop.Controllers
                 id = cart.ID,
                 products = ps,
                 status = "Filling",
-                updateDate = cart.UpdateDate
-
-
+                updateDate = cart.UpdateDate,
+                totalprice = cart.TotalPrice,
             };
             token t1 = new token()
             {
