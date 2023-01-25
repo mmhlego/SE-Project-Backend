@@ -544,7 +544,7 @@ namespace MyOnlineShop.Controllers
 					List<eachproduct> eachproducts = new List<eachproduct>();
 					foreach (var o in orders)
 					{
-						var productId = _context.productPrices.SingleOrDefault(p => p.ID == o.ProductPriceID).ProductID;
+						var productId = _context.productPrices.SingleOrDefault(p => p.ID == o.ProductPriceID).ID;
 						eachproduct eachproduct = new eachproduct() { amount = o.Amount, productId = productId };
 						eachproducts.Add(eachproduct);
 
@@ -568,14 +568,14 @@ namespace MyOnlineShop.Controllers
 
 		[HttpPut]
 		[Route("profile/carts/current")]
-		public ActionResult profilecartcurrentput([FromBody] eachproduct product)
+		public ActionResult profilecartcurrentput([FromBody] eachproduct requestBody)
 		{
 			try
 			{
 				if (!ModelState.IsValid)
 				{
 					Logger.LoggerFunc("profile/carts/current", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								product, BadRequest(ModelState));
+								requestBody, BadRequest(ModelState));
 					return BadRequest(ModelState);
 				}
 				else
@@ -586,13 +586,13 @@ namespace MyOnlineShop.Controllers
 					if (username == null)
 					{
 						Logger.LoggerFunc("profile/carts/current", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								product, Unauthorized());
+								requestBody, Unauthorized());
 						return Unauthorized();
 					}
 					if (user.AccessLevel.ToLower() != "customer")
 					{
 						Logger.LoggerFunc("profile/carts/current", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								product, Forbid());
+								requestBody, Forbid());
 						return Forbid();
 					}
 
@@ -606,87 +606,89 @@ namespace MyOnlineShop.Controllers
 							TotalPrice = 0,
 							Status = "filling",
 							UpdateDate = DateTime.Now,
-							Description = "customers cart"
+							Description = ""
 						};
 						_context.cart.Add(cart);
 						_context.SaveChanges();
 						checkcart = cart;
 					}
 
+					
+					var productprice = _context.productPrices.SingleOrDefault(p => p.ID == requestBody.productId);
+					if (productprice == null)
 					{
-						var productprice = _context.productPrices.SingleOrDefault(p => p.ID == product.productId);
-						if (productprice == null)
-						{
-							Logger.LoggerFunc("profile/carts/current", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								product, Forbid());
-							return NotFound();
-						}
-						var product1 = _context.Products.SingleOrDefault(p => p.ID == productprice.ProductID);
-						if (product.amount > productprice.Amount)
-						{
-							Logger.LoggerFunc("profile/carts/current", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								product, NotFound());
-							return NotFound();
-						}
-						var checkorder = _context.orders.SingleOrDefault(c => c.CartID == checkcart.ID && c.ProductPriceID == product.productId);
+						Logger.LoggerFunc("profile/carts/current", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+							requestBody, Forbid());
+						return NotFound();
+					}
+					var selectedProduct = _context.Products.SingleOrDefault(p => p.ID == productprice.ProductID);
+					if (requestBody.amount > productprice.Amount)
+					{
+						Logger.LoggerFunc("profile/carts/current", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+							requestBody, NotFound());
+						return NotFound();
+					}
 
-						if (checkorder != null)
-						{
-							checkorder.Amount = checkorder.Amount + product.amount;
+					var checkorder = _context.orders.SingleOrDefault(c => c.CartID == checkcart.ID && c.ProductPriceID == requestBody.productId);
 
-							if(checkorder.Amount <= 0) {
-								_context.Remove(checkorder);
-								_context.SaveChanges();
-							} else {
-								_context.Update(checkorder);
-								_context.SaveChanges();
-							}
-						}
-						else
-						{
-							Order order = new Order()
-							{
-								ID = Guid.NewGuid(),
-								Amount = product.amount,
-								ProductPriceID = productprice.ID,
-								CartID = checkcart.ID
+					if (checkorder != null)
+					{
+						checkorder.Amount = checkorder.Amount + requestBody.amount;
 
-							};
-							_context.orders.Add(order);
+						if(checkorder.Amount <= 0) {
+							_context.Remove(checkorder);
+							_context.SaveChanges();
+						} else {
+							_context.Update(checkorder);
 							_context.SaveChanges();
 						}
-						checkcart.TotalPrice = checkcart.TotalPrice + (product.amount * productprice.Price);
-						_context.cart.Update(checkcart);
-						_context.SaveChanges();
-						var orders = _context.orders.Where(s => s.CartID == checkcart.ID).ToList();
-						List<eachproduct> eachproducts = new List<eachproduct>();
-						foreach (var o in orders)
-						{
-							var productId = _context.productPrices.SingleOrDefault(p => p.ID == o.ProductPriceID).ProductID;
-							eachproduct eachproduct = new eachproduct() { amount = o.Amount, productId = productId };
-							eachproducts.Add(eachproduct);
-
-						}
-						eachCart p = new eachCart()
-						{
-							id = checkcart.ID,
-							customerId = checkcart.CustomerID,
-							description = checkcart.Description,
-							products = eachproducts,
-							status = checkcart.Status,
-							updateDate = checkcart.UpdateDate
-						};
-						Logger.LoggerFunc("profile/carts/current", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								product, p);
-						return Ok(p);
-
 					}
+					else
+					{
+						Order order = new Order()
+						{
+							ID = Guid.NewGuid(),
+							Amount = requestBody.amount,
+							ProductPriceID = productprice.ID,
+							CartID = checkcart.ID
+						};
+						_context.orders.Add(order);
+						_context.SaveChanges();
+					}
+
+					checkcart.TotalPrice = checkcart.TotalPrice + (requestBody.amount * productprice.Price);
+					_context.cart.Update(checkcart);
+					_context.SaveChanges();
+
+					var orders = _context.orders.Where(s => s.CartID == checkcart.ID).ToList();
+					List<eachproduct> eachproducts = new List<eachproduct>();
+
+					foreach (var o in orders)
+					{
+						var productPriceId = _context.productPrices.SingleOrDefault(p => p.ID == o.ProductPriceID).ID;
+						eachproduct eachproduct = new eachproduct() { amount = o.Amount, productId = productPriceId };
+						eachproducts.Add(eachproduct);
+					}
+
+					eachCart p = new eachCart()
+					{
+						id = checkcart.ID,
+						customerId = checkcart.CustomerID,
+						description = checkcart.Description,
+						products = eachproducts,
+						status = checkcart.Status,
+						updateDate = checkcart.UpdateDate
+					};
+
+					Logger.LoggerFunc("profile/carts/current", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
+							requestBody, p);
+					return Ok(p);
 				}
 			}
 			catch
 			{
 				Logger.LoggerFunc("profile/carts/current", _context.users.FirstOrDefault(l => l.UserName == User.FindFirstValue(ClaimTypes.Name)).ID,
-								product, StatusCode(StatusCodes.Status500InternalServerError));
+								requestBody, StatusCode(StatusCodes.Status500InternalServerError));
 				return StatusCode(StatusCodes.Status500InternalServerError);
 			}
 		}
