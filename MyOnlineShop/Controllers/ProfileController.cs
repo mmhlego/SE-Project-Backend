@@ -159,7 +159,7 @@ namespace MyOnlineShop.Controllers
 				}
 				else
 				{
-					var carts = _context.cart.Where(c => c.CustomerID == customer.ID).ToList();
+					var carts = _context.cart.Where(c => c.CustomerID == customer.ID && c.Status.ToLower()!="filling").ToList();
 					var length = carts.Count();
 
 					var totalPages = (int)Math.Ceiling(Convert.ToDecimal(length) / Convert.ToDecimal(cartsPerPage));
@@ -189,7 +189,8 @@ namespace MyOnlineShop.Controllers
 							description = c.Description,
 							status = c.Status,
 							updateDate = c.UpdateDate,
-							products = products
+							products = products,
+							totalprice=c.TotalPrice
 						};
 						carts1.Add(c1);
 

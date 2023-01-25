@@ -108,7 +108,7 @@ namespace MyOnlineShop.Controllers
                 if (t.Length==2 && t[0] == "AMOUNT")
                 {
                     double a = Convert.ToDouble(t[1]);
-                    cart.TotalPrice = cart.TotalPrice - a;
+                    cart.TotalPrice = Math.Max(cart.TotalPrice - a,0);
                 }
                 else if (t.Length == 2 && t[0] == "PERCENT")
                 {
