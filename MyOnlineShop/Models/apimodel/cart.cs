@@ -22,6 +22,9 @@
 	{
 		public Guid productId { get; set; }
 		public int amount { get; set; }
+
+		//public string description { get; set; }
+
 	}
 
 

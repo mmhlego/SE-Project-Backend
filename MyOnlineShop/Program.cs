@@ -11,10 +11,10 @@ builder.Services.AddControllers();
 
 builder.Services.AddDbContext<MyShopContext>(options =>
 {
-	//options.UseSqlServer("Data Source =DESKTOP-TU89R0L\\EFI;Initial Catalog=SevenShop_DB;Integrated Security=true;Trust Server Certificate=true;");
+	options.UseSqlServer("Data Source =DESKTOP-TU89R0L\\EFI;Initial Catalog=MyOnlineShop_DB2;Integrated Security=true;Trust Server Certificate=true;");
 	//options.UseSqlServer("Data Source=localhost,1433; Database=shopdatabase5; User Id=sa; Password=someThingComplicated1234; Trust Server Certificate=true;");
 	// options.UseSqlServer("Data Source=KARIMI-PC;Initial Catalog=MyOnlineShop_DB;Integrated Security=false;User ID=sa;Password=5291431220;Trust Server Certificate=true;");
-	options.UseSqlServer("Data Source=MMHLEGO-PC;Initial Catalog=MyOnlineShop_DB1;Integrated Security=true;Trust Server Certificate=true;");
+	//options.UseSqlServer("Data Source=MMHLEGO-PC;Initial Catalog=MyOnlineShop_DB1;Integrated Security=true;Trust Server Certificate=true;");
 });
 
 #endregion

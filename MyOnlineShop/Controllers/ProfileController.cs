@@ -5,6 +5,8 @@ using MyOnlineShop.Services;
 using MyOnlineShop.Models;
 using MyOnlineShop.Models.apimodel;
 using Microsoft.CodeAnalysis;
+using System.Reflection.Metadata.Ecma335;
+using System.Web.Helpers;
 
 namespace MyOnlineShop.Controllers
 {
@@ -633,6 +635,17 @@ namespace MyOnlineShop.Controllers
 
 					if (checkorder != null)
 					{
+						var p1 = _context.productPrices.SingleOrDefault(l => l.ID == requestBody.productId);
+                        string[] t = p.Discount.Split(new char[] { '_' });
+                        double a = Convert.ToDouble(t[1]);
+                        if (t[0] == "AMOUNT")
+						{
+							cart.TotalPrice = cart.TotalPrice - a;
+						}
+                        else if (t[0] == "PERCENT")
+                        {
+                            cart.TotalPrice = cart.TotalPrice - (cart.TotalPrice * a / 100);
+						}
 						checkorder.Amount = checkorder.Amount + requestBody.amount;
 
 						if(checkorder.Amount <= 0) {
@@ -731,7 +744,7 @@ namespace MyOnlineShop.Controllers
 				}
 
 				else
-				{
+				{   
 					var orders = _context.orders.Where(c => c.CartID == checkcart.ID).ToList();
 					foreach (var o in orders)
 					{
@@ -752,6 +765,74 @@ namespace MyOnlineShop.Controllers
 				return StatusCode(StatusCodes.Status500InternalServerError);
 			}
 		}
+
+
+		[HttpPut]
+		[Route("profile/carts/current/accept")]
+		public IActionResult acceptcart()
+		{
+            var username = User.FindFirstValue(ClaimTypes.Name);
+            var user = _context.users.SingleOrDefault(s => s.UserName == username);
+			if(user == null)
+			{
+				return Unauthorized();
+			}
+            var customer = _context.customer.SingleOrDefault(c => c.UserId == user.ID);
+			if (customer == null)
+			{
+				return Forbid();
+			}
+				var cart = _context.cart.SingleOrDefault(c => c.CustomerID == customer.ID && c.Status == "Filling");
+				if(cart == null)
+				{
+					return BadRequest();
+				}
+				else 
+				{    if(customer.Balance < cart.TotalPrice)
+				  {
+                    var b = new Dictionary<string, string>() { { "status", "Rejected" } };
+					return Ok(b);
+
+                }
+					cart.Status = "Pending";
+                var a = new Dictionary<string, string>() { { "status", "Accepted" } };
+                cart.UpdateDate = DateTime.Now;
+					_context.cart.Update(cart);
+					_context.SaveChanges();
+					var orders = _context.orders.Where(k => k.CartID == cart.ID).ToList();
+					List<eachproduct> eachproducts = new List<eachproduct>();
+					foreach(var i in orders)
+					{
+					if (i.Amount <= 0)
+					{
+						return BadRequest();
+					}
+						var productprice = _context.productPrices.SingleOrDefault(p => p.ID == i.ProductPriceID);
+						productprice.Amount = productprice.Amount - i.Amount;
+					if(productprice.Amount < 0)
+					{
+						cart.Status = "Rejected";
+						cart.UpdateDate = DateTime.Now;
+                        var s = new Dictionary<string, string>() { { "status", "Rejected" } };
+                        _context.cart.Update(cart);
+						_context.SaveChanges();
+						return Ok(s);
+					}
+						
+					
+						_context.productPrices.Update(productprice);
+						_context.SaveChanges();
+					}
+					
+					return Ok(a);
+				}
+
+			
+            
+		}
+
+
+
 
 
 	}
