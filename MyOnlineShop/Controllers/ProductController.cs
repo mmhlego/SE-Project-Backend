@@ -27,10 +27,44 @@ namespace MyOnlineShop.Controllers
 		[HttpGet]
 		[Route("products/")]
 		public ActionResult GetAllProducts(ProductPageGetRequestModel p1)
-
 		{
 
 			List<ProductPrice> prices = _context.productPrices.ToList();
+
+			if(p1.available == false) {
+				var allProducts = _context.Products.ToList();
+
+				var filtered = new List<productModel>();
+				allProducts.ForEach(p => {
+					if (p1.category == null || p1.category.Length == 0 || p1.category == p.Category) {
+						filtered.Add(new productModel() {
+							id = p.ID,
+							image = p.Image,
+							name = p.Name,
+							category = p.Category,
+							description = p.Description,
+							dislikes = p.dislikes,
+							likes = p.likes
+						});
+					}
+				});
+
+				var _totalPages = (int)Math.Ceiling(Convert.ToDecimal(filtered.Count) / Convert.ToDecimal(p1.productsPerPage));
+				p1.page = Math.Min(_totalPages, p1.page);
+				var _start = Math.Max((p1.page - 1) * p1.productsPerPage, 0);
+				var _end = Math.Min(p1.page * p1.productsPerPage, prices.Count);
+				var _count = Math.Max(_end - _start, 0);
+				_count = Math.Min(_count, filtered.Count());
+				p1.productsPerPage = _count;
+				filtered = filtered.GetRange(_start, _count);
+
+				return Ok( new Pagination<productModel>() {
+					page = p1.page,
+					perPage = p1.productsPerPage,
+					totalPages = _totalPages,
+					data = filtered
+				});
+			}
 
 			if (p1.available == true)
 			{
